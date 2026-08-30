@@ -1,11 +1,11 @@
-const CACHE = "family-shop-v14";
+const CACHE = "family-shop-v15";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=14",
-  "./app.js?v=14",
-  "./products.js?v=14",
-  "./config.js?v=14",
+  "./styles.css?v=15",
+  "./app.js?v=15",
+  "./products.js?v=15",
+  "./config.js?v=15",
   "./manifest.webmanifest"
 ];
 
@@ -25,11 +25,9 @@ self.addEventListener("activate", e => {
   );
 });
 
-// Netzwerk zuerst: neue GitHub-Version wird bevorzugt, Cache nur bei Offline.
 self.addEventListener("fetch", e => {
   e.respondWith(
     fetch(e.request, { cache: "no-store" })
-      .then(response => response)
       .catch(() => caches.match(e.request))
   );
 });

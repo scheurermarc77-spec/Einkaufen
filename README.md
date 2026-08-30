@@ -116,3 +116,11 @@ Einmalig `weekly_shopping_items_v12_migration.sql` im Supabase SQL Editor ausfü
 - Die persönliche Einkaufsliste ist dauerhaft.
 - Alte PWA-/Service-Worker-Caches werden automatisch entfernt.
 - CSS und JavaScript werden mit Versionskennung geladen, damit iPhones sicher die neue Version beziehen.
+
+
+## Version 15 – Cloud-Fix
+
+- Supabase Project URL und Publishable Key sind zusätzlich direkt in der App hinterlegt.
+- Dadurch funktioniert die Cloud-Verbindung auch dann, wenn `config.js` auf GitHub fehlt oder eine ältere Version davon geladen wird.
+- `config.js` enthält weiterhin dieselben korrekten Werte.
+- Cache-Version wurde auf v15 erhöht.

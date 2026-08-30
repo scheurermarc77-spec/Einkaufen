@@ -1,5 +1,13 @@
 const PEOPLE = ["Leon", "Papi", "Mami", "Anouk"];
-const config = window.APP_CONFIG;
+const config = (window.APP_CONFIG &&
+  window.APP_CONFIG.SUPABASE_URL &&
+  window.APP_CONFIG.SUPABASE_ANON_KEY)
+  ? window.APP_CONFIG
+  : {
+      SUPABASE_URL: "https://kfpxheegmeupnuzqjqqt.supabase.co",
+      SUPABASE_ANON_KEY: "sb_publishable_vlP2dIHDTK-VY5LK-jeS_w_tN04WaK0",
+      HOUSEHOLD_ID: "leon-papi-mami-anouk"
+    };
 let db = null;
 let currentPerson = localStorage.getItem("family-shop-person") || "";
 let items = [];
@@ -26,7 +34,13 @@ async function cleanupOldAppCaches() {
 }
 
 function configured() {
-  return config.SUPABASE_URL.startsWith("http") && !config.SUPABASE_ANON_KEY.startsWith("HIER_");
+  return Boolean(
+    config &&
+    typeof config.SUPABASE_URL === "string" &&
+    config.SUPABASE_URL.startsWith("https://") &&
+    typeof config.SUPABASE_ANON_KEY === "string" &&
+    config.SUPABASE_ANON_KEY.startsWith("sb_publishable_")
+  );
 }
 
 
