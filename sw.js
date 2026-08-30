@@ -1,33 +1,33 @@
-const CACHE = "family-shop-v15";
+const CACHE = "family-shop-v16";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=15",
-  "./app.js?v=15",
-  "./products.js?v=15",
-  "./config.js?v=15",
+  "./styles.css?v=16",
+  "./app.js?v=16",
+  "./products.js?v=16",
   "./manifest.webmanifest"
 ];
 
-self.addEventListener("install", e => {
+self.addEventListener("install", event => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
 });
 
-self.addEventListener("activate", e => {
-  e.waitUntil(
+self.addEventListener("activate", event => {
+  event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(k => k.startsWith("family-shop-") && k !== CACHE)
-            .map(k => caches.delete(k))
+        keys.filter(key => key.startsWith("family-shop-") && key !== CACHE)
+            .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("fetch", e => {
-  e.respondWith(
-    fetch(e.request, { cache: "no-store" })
-      .catch(() => caches.match(e.request))
+self.addEventListener("fetch", event => {
+  // Never let stale app code win over the network.
+  event.respondWith(
+    fetch(event.request, { cache: "no-store" })
+      .catch(() => caches.match(event.request))
   );
 });

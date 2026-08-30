@@ -124,3 +124,11 @@ Einmalig `weekly_shopping_items_v12_migration.sql` im Supabase SQL Editor ausfü
 - Dadurch funktioniert die Cloud-Verbindung auch dann, wenn `config.js` auf GitHub fehlt oder eine ältere Version davon geladen wird.
 - `config.js` enthält weiterhin dieselben korrekten Werte.
 - Cache-Version wurde auf v15 erhöht.
+
+
+## Version 16 – definitiver Cloud-Fix
+
+- `config.js` wird von der App nicht mehr geladen.
+- Eine alte `config.js` auf GitHub kann die Supabase-Zugangsdaten deshalb nicht mehr überschreiben.
+- Project URL und Publishable Key sind direkt und validiert in der App enthalten.
+- Cache wurde auf v16 erhöht und App-Code wird bevorzugt aus dem Netzwerk geladen.

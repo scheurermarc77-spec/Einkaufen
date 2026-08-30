@@ -1,13 +1,21 @@
 const PEOPLE = ["Leon", "Papi", "Mami", "Anouk"];
-const config = (window.APP_CONFIG &&
-  window.APP_CONFIG.SUPABASE_URL &&
-  window.APP_CONFIG.SUPABASE_ANON_KEY)
-  ? window.APP_CONFIG
-  : {
-      SUPABASE_URL: "https://kfpxheegmeupnuzqjqqt.supabase.co",
-      SUPABASE_ANON_KEY: "sb_publishable_vlP2dIHDTK-VY5LK-jeS_w_tN04WaK0",
-      HOUSEHOLD_ID: "leon-papi-mami-anouk"
-    };
+const BUILTIN_CONFIG = Object.freeze({
+  SUPABASE_URL: "https://kfpxheegmeupnuzqjqqt.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_vlP2dIHDTK-VY5LK-jeS_w_tN04WaK0",
+  HOUSEHOLD_ID: "leon-papi-mami-anouk"
+});
+
+function validConfig(candidate) {
+  return Boolean(
+    candidate &&
+    typeof candidate.SUPABASE_URL === "string" &&
+    candidate.SUPABASE_URL.startsWith("https://") &&
+    typeof candidate.SUPABASE_ANON_KEY === "string" &&
+    candidate.SUPABASE_ANON_KEY.startsWith("sb_publishable_")
+  );
+}
+
+const config = validConfig(window.APP_CONFIG) ? window.APP_CONFIG : BUILTIN_CONFIG;
 let db = null;
 let currentPerson = localStorage.getItem("family-shop-person") || "";
 let items = [];
@@ -34,13 +42,7 @@ async function cleanupOldAppCaches() {
 }
 
 function configured() {
-  return Boolean(
-    config &&
-    typeof config.SUPABASE_URL === "string" &&
-    config.SUPABASE_URL.startsWith("https://") &&
-    typeof config.SUPABASE_ANON_KEY === "string" &&
-    config.SUPABASE_ANON_KEY.startsWith("sb_publishable_")
-  );
+  return validConfig(config);
 }
 
 
@@ -886,8 +888,8 @@ async function start() {
   await cleanupOldAppCaches();
   initProfile();
   buildCatalog();
-  if (!configured()) {
-    $("syncState").textContent = "Cloud noch nicht eingerichtet";
+  if (!configured() || !window.supabase?.createClient) {
+    $("syncState").textContent = "Cloud-Verbindung konnte nicht gestartet werden";
     $("setupDialog").showModal();
   } else {
     db = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
