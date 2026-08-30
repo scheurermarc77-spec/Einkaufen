@@ -67,3 +67,10 @@ Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor 
 - Es gibt nur noch eine kleine Anzeige mit der Anzahl offener Artikel.
 - In der Einkaufsliste werden keine Kategorien oder Untergruppen mehr angezeigt.
 - Die Liste ist bewusst flach und einfach gehalten; offene Artikel stehen zuerst.
+
+
+## Version 10 – Vorschläge nur beim Stöbern
+
+- Kategorie- und Untergruppen-Vorschläge erscheinen erst, wenn «Nach Kategorie stöbern» geöffnet wird.
+- Solange weder gesucht noch gestöbert wird, bleibt der Vorschlagsbereich leer.
+- Die normale Suche durchsucht weiterhin unabhängig davon den gesamten Produktkatalog.

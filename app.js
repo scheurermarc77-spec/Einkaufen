@@ -62,6 +62,7 @@ function buildCatalog() {
   $("categorySelect").addEventListener("change", refreshSubgroups);
   $("subgroupSelect").addEventListener("change", renderProducts);
   $("productSearch").addEventListener("input", renderProducts);
+  $("browseDetails").addEventListener("toggle", renderProducts);
 
   $("newProductCategory").addEventListener("change", handleNewProductCategoryChange);
   $("newProductCategoryName").addEventListener("input", handleNewProductCategoryNameInput);
@@ -181,20 +182,29 @@ function renderProducts() {
   const rawQuery = $("productSearch").value.trim().replace(/\s+/g, " ");
   const q = rawQuery.toLocaleLowerCase("de-CH");
   const all = allCatalogProducts();
+  const browsing = Boolean($("browseDetails")?.open);
   let products = [];
 
-  // Bei einer Suche immer ALLE Kategorien und Untergruppen berücksichtigen.
+  // 1) Suche: immer über den gesamten Katalog.
   if (q) {
     products = all.filter(p => {
       const haystack = `${p.name} ${p.category} ${p.subgroup}`.toLocaleLowerCase("de-CH");
       return haystack.includes(q);
     });
-  } else {
+  }
+  // 2) Stöbern: Vorschläge erst anzeigen, wenn «Nach Kategorie stöbern»
+  //    vom User bewusst geöffnet wurde.
+  else if (browsing) {
     products = all.filter(p => {
       if (p.category !== selectedCategory) return false;
       if (selectedSubgroup !== "__all" && p.subgroup !== selectedSubgroup) return false;
       return true;
     });
+  }
+  // 3) Weder Suche noch Stöbern: keine Vorschläge anzeigen.
+  else {
+    $("productGrid").innerHTML = "";
+    return;
   }
 
   products.sort((a, b) => a.name.localeCompare(b.name, "de"));
@@ -219,7 +229,9 @@ function renderProducts() {
     : "";
 
   if (!products.length && !addNewOption) {
-    $("productGrid").innerHTML = `<div class="catalog-empty">Kein Produkt gefunden. Gib einen anderen Suchbegriff ein oder nimm das Produkt neu in die Datenbank auf.</div>`;
+    $("productGrid").innerHTML = q
+      ? `<div class="catalog-empty">Kein Produkt gefunden.</div>`
+      : `<div class="catalog-empty">In dieser Auswahl sind keine Produkte vorhanden.</div>`;
   } else {
     $("productGrid").innerHTML = productButtons + addNewOption;
   }
