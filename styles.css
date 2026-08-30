@@ -80,3 +80,41 @@ dialog::backdrop { background: rgba(0,0,0,.35); backdrop-filter: blur(3px); }
   line-height: 1.2;
   opacity: 0.66;
 }
+
+
+/* Neue Produkte direkt aus der Suche in die gemeinsame Produktdatenbank aufnehmen */
+.new-product-suggestion {
+  grid-column: 1 / -1;
+  border: 1px solid #b9c9c1;
+  background: var(--accent-soft);
+  border-radius: 15px;
+  padding: 13px;
+  display: grid;
+  gap: 10px;
+}
+.new-product-copy {
+  display: grid;
+  gap: 3px;
+}
+.new-product-copy strong {
+  font-size: 14px;
+  color: var(--accent);
+}
+.new-product-copy span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.compact-btn {
+  width: auto;
+  margin-top: 0;
+  justify-self: start;
+  padding: 10px 13px;
+}
+.dialog-secondary {
+  margin-top: 9px;
+}
+button:disabled, select:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}

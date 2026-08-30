@@ -28,3 +28,14 @@ Die App nutzt Supabase als kostenlose Cloud-Datenbank.
 
 ## Hinweis zur Sicherheit
 Diese Familienversion verwendet einen gemeinsamen Haushaltscode und keine Passwörter. Wer die App-URL und den Code kennt, könnte theoretisch auf die Liste zugreifen. Für eine private Familienliste ist das unkompliziert; für stärkeren Schutz kann später ein Login pro Person ergänzt werden.
+
+
+## Version 6 – Produktdatenbank
+
+Bei der Produktsuche werden weiterhin alle Kategorien und Untergruppen durchsucht.
+Falls kein Produkt mit exakt diesem Namen vorhanden ist, kann es direkt aus der Suche
+in die gemeinsame Produktdatenbank aufgenommen werden. Dabei werden Kategorie und
+Untergruppe ausgewählt. Das neue Produkt ist anschliessend für alle Familienmitglieder
+verfügbar und wird direkt auf die Einkaufsliste gesetzt.
+
+Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor ausgeführt werden.

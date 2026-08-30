@@ -107,6 +107,27 @@
     </div>
   </dialog>
 
+
+  <dialog id="newProductDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>Neues Produkt</h2>
+        <button id="closeNewProductDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+      <p><strong id="newProductNameLabel"></strong> ist noch nicht im Produktkatalog. Soll das Produkt in die gemeinsame Datenbank aufgenommen werden?</p>
+
+      <label for="newProductCategory">Kategorie</label>
+      <select id="newProductCategory"></select>
+
+      <label for="newProductSubgroup">Untergruppe</label>
+      <select id="newProductSubgroup"></select>
+      <div id="newProductSubgroupHint" class="small-muted"></div>
+
+      <button id="saveNewProductBtn" class="primary-btn" type="button">Aufnehmen & auf Liste setzen</button>
+      <button id="cancelNewProductBtn" class="ghost-btn full dialog-secondary" type="button">Abbrechen</button>
+    </div>
+  </dialog>
+
   <dialog id="setupDialog">
     <div class="dialog-card">
       <h2>Cloud-Verbindung fehlt</h2>

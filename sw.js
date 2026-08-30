@@ -1,4 +1,4 @@
-const CACHE = "family-shop-v2";
+const CACHE = "family-shop-v6";
 const ASSETS = ["./","./index.html","./styles.css","./app.js","./products.js","./config.js","./manifest.webmanifest"];
 self.addEventListener("install", e => {
   self.skipWaiting();
