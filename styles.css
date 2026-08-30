@@ -474,3 +474,12 @@ main {
     width: 100%;
   }
 }
+
+
+/* v13 – keine Wochenangabe mehr */
+.weekly-period {
+  justify-content: flex-end;
+}
+.weekly-period span {
+  display: none;
+}

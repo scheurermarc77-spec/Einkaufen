@@ -18,9 +18,6 @@ function configured() {
   return config.SUPABASE_URL.startsWith("http") && !config.SUPABASE_ANON_KEY.startsWith("HIER_");
 }
 
-function currentWeekLabel() {
-  return "Dauerhafte persönliche Grundliste";
-}
 
 function currentActiveItems() {
   return activeListMode === "weekly" ? weeklyItems : items;

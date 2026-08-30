@@ -101,3 +101,10 @@ Die persönliche Liste funktioniert neu als dauerhafte Grundliste:
 - Die gemeinsame Einkaufsliste bleibt vollständig unabhängig davon.
 
 Einmalig `weekly_shopping_items_v12_migration.sql` im Supabase SQL Editor ausführen.
+
+
+## Version 13 – ohne Wochenangabe
+
+- In der persönlichen Einkaufsliste wird keine aktuelle Kalenderwoche und kein Datumsbereich mehr angezeigt.
+- Die Liste bleibt weiterhin dauerhaft bestehen.
+- «Häkchen zurücksetzen» bleibt für den nächsten Einkauf verfügbar.
