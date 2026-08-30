@@ -3,6 +3,7 @@ const config = window.APP_CONFIG;
 let db = null;
 let currentPerson = localStorage.getItem("family-shop-person") || "";
 let items = [];
+let customGroups = [];
 let hidePurchased = false;
 
 const $ = (id) => document.getElementById(id);
@@ -27,21 +28,59 @@ function initProfile() {
   if (!currentPerson) $("profileDialog").showModal();
 }
 
+function getAllCategories() {
+  const categories = new Set(Object.keys(PRODUCT_CATALOG));
+  for (const g of customGroups) if (g.category) categories.add(g.category);
+  return [...categories].sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function getSubgroups(category) {
+  const groups = new Set(Object.keys(PRODUCT_CATALOG[category] || {}));
+  for (const g of customGroups) {
+    if (g.category === category && g.subcategory) groups.add(g.subcategory);
+  }
+  return [...groups].sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function preserveSelectValue(select, options, fallback = "") {
+  const old = select.value;
+  select.innerHTML = options.join("");
+  if ([...select.options].some(o => o.value === old)) select.value = old;
+  else if (fallback && [...select.options].some(o => o.value === fallback)) select.value = fallback;
+}
+
 function buildCatalog() {
-  const categories = Object.keys(PRODUCT_CATALOG);
-  $("categorySelect").innerHTML = categories.map(c => `<option>${c}</option>`).join("");
-  $("customCategory").innerHTML = categories.map(c => `<option>${c}</option>`).join("");
+  refreshCategorySelectors();
   $("categorySelect").addEventListener("change", refreshSubgroups);
   $("subgroupSelect").addEventListener("change", renderProducts);
   $("productSearch").addEventListener("input", renderProducts);
+  $("customCategory").addEventListener("change", refreshCustomSubgroups);
   refreshSubgroups();
+}
+
+function refreshCategorySelectors() {
+  const categories = getAllCategories();
+  const options = categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`);
+  preserveSelectValue($("categorySelect"), options);
+  preserveSelectValue($("customCategory"), options);
+  preserveSelectValue($("manageCategorySelect"), options);
+  refreshCustomSubgroups();
+  refreshManageSubgroupList();
 }
 
 function refreshSubgroups() {
   const cat = $("categorySelect").value;
-  const groups = Object.keys(PRODUCT_CATALOG[cat]);
-  $("subgroupSelect").innerHTML = [`<option value="__all">Alle Untergruppen</option>`, ...groups.map(g => `<option>${g}</option>`)].join("");
+  const groups = getSubgroups(cat);
+  const options = [`<option value="__all">Alle Untergruppen</option>`, ...groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)];
+  preserveSelectValue($("subgroupSelect"), options, "__all");
   renderProducts();
+}
+
+function refreshCustomSubgroups() {
+  const cat = $("customCategory").value;
+  const groups = getSubgroups(cat);
+  $("customSubgroupList").innerHTML = groups.map(g => `<option value="${escapeAttr(g)}"></option>`).join("");
+  if (!$("customSubgroup").value && groups.length) $("customSubgroup").placeholder = `z. B. ${groups[0]}`;
 }
 
 function renderProducts() {
@@ -49,12 +88,14 @@ function renderProducts() {
   const subgroup = $("subgroupSelect").value;
   const q = $("productSearch").value.trim().toLowerCase();
   let products = [];
-  for (const [sg, arr] of Object.entries(PRODUCT_CATALOG[cat])) {
+  for (const [sg, arr] of Object.entries(PRODUCT_CATALOG[cat] || {})) {
     if (subgroup !== "__all" && subgroup !== sg) continue;
     for (const name of arr) products.push({name, subgroup: sg});
   }
   if (q) products = products.filter(p => p.name.toLowerCase().includes(q));
-  $("productGrid").innerHTML = products.map(p => `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-subgroup="${escapeAttr(p.subgroup)}">${escapeHtml(p.name)}</button>`).join("");
+  $("productGrid").innerHTML = products.length
+    ? products.map(p => `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-subgroup="${escapeAttr(p.subgroup)}">${escapeHtml(p.name)}</button>`).join("")
+    : `<div class="catalog-empty">Keine vordefinierten Produkte in dieser Auswahl. Über „Eigenes Produkt“ kannst du eines hinzufügen.</div>`;
 }
 
 $("productGrid").addEventListener("click", e => {
@@ -69,13 +110,15 @@ $("customToggle").onclick = () => {
   $("customToggle").textContent = $("customMode").classList.contains("hidden") ? "Eigenes Produkt" : "Katalog anzeigen";
 };
 
-$("addCustomBtn").onclick = () => {
+$("addCustomBtn").onclick = async () => {
   const name = $("customName").value.trim();
   if (!name) return toast("Bitte Produktname eingeben");
   const cat = $("customCategory").value;
   const subgroup = $("customSubgroup").value.trim() || "Eigene Produkte";
-  addItem(name, cat, subgroup);
+  await ensureCatalogGroup(cat, subgroup);
+  await addItem(name, cat, subgroup);
   $("customName").value = "";
+  $("customSubgroup").value = "";
 };
 
 async function addItem(name, category, subgroup) {
@@ -165,15 +208,97 @@ $("shoppingList").addEventListener("click", async e => {
   if (error) toast("Löschen fehlgeschlagen");
 });
 
+// --- Eigene Kategorien & Untergruppen ---
+$("manageCatalogBtn").onclick = () => {
+  refreshCategorySelectors();
+  renderCustomGroups();
+  $("catalogDialog").showModal();
+};
+$("closeCatalogDialog").onclick = () => $("catalogDialog").close();
+$("manageCategorySelect").addEventListener("change", refreshManageSubgroupList);
+
+$("addCategoryBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+  const category = $("newCategoryName").value.trim();
+  if (!category) return toast("Bitte Kategoriename eingeben");
+  await ensureCatalogGroup(category, null);
+  $("newCategoryName").value = "";
+};
+
+$("addSubgroupBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+  const category = $("manageCategorySelect").value;
+  const subgroup = $("newSubgroupName").value.trim();
+  if (!category) return toast("Bitte Kategorie wählen");
+  if (!subgroup) return toast("Bitte Untergruppe eingeben");
+  await ensureCatalogGroup(category, subgroup);
+  $("newSubgroupName").value = "";
+};
+
+async function ensureCatalogGroup(category, subcategory = null) {
+  if (!db || !category) return false;
+  const normalizedSub = subcategory?.trim() || null;
+  const exists = customGroups.some(g => g.category.toLowerCase() === category.toLowerCase() && (g.subcategory || "").toLowerCase() === (normalizedSub || "").toLowerCase());
+  const staticExists = normalizedSub && Object.keys(PRODUCT_CATALOG[category] || {}).some(g => g.toLowerCase() === normalizedSub.toLowerCase());
+  if (exists || staticExists) return true;
+  const { error } = await db.from("catalog_groups").insert({
+    category: category.trim(),
+    subcategory: normalizedSub,
+    created_by: currentPerson || "Unbekannt"
+  });
+  if (error) {
+    if (String(error.message || "").includes("catalog_groups")) toast("Kategorien-Funktion muss zuerst in Supabase aktiviert werden");
+    else toast("Kategorie konnte nicht gespeichert werden");
+    return false;
+  }
+  return true;
+}
+
+async function loadCatalogGroups() {
+  if (!db) return;
+  const { data, error } = await db.from("catalog_groups").select("*").order("category").order("subcategory");
+  if (error) {
+    console.warn("catalog_groups nicht verfügbar", error.message);
+    return;
+  }
+  customGroups = data || [];
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderCustomGroups();
+}
+
+function refreshManageSubgroupList() {
+  const category = $("manageCategorySelect").value;
+  const groups = getSubgroups(category);
+  $("manageSubgroupHint").textContent = groups.length ? `Vorhanden: ${groups.join(", ")}` : "Noch keine Untergruppen vorhanden.";
+}
+
+function renderCustomGroups() {
+  if (!$("customGroupList")) return;
+  if (!customGroups.length) {
+    $("customGroupList").innerHTML = `<div class="catalog-empty">Noch keine eigenen Kategorien oder Untergruppen erstellt.</div>`;
+    return;
+  }
+  const byCategory = {};
+  for (const g of customGroups) (byCategory[g.category] ||= []).push(g);
+  $("customGroupList").innerHTML = Object.entries(byCategory).map(([category, rows]) => {
+    const subgroups = rows.filter(r => r.subcategory).map(r => r.subcategory);
+    const creators = [...new Set(rows.map(r => r.created_by).filter(Boolean))].join(", ");
+    return `<div class="custom-group-row">
+      <div><strong>${escapeHtml(category)}</strong>${subgroups.length ? `<div class="small-muted">${subgroups.map(escapeHtml).join(" · ")}</div>` : `<div class="small-muted">Kategorie ohne Untergruppe</div>`}${creators ? `<div class="small-muted">Erstellt von ${escapeHtml(creators)}</div>` : ""}</div>
+    </div>`;
+  }).join("");
+}
+
 $("clearPurchasedBtn").onclick = () => { hidePurchased = !hidePurchased; renderList(); };
-$("refreshBtn").onclick = loadItems;
+$("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadCatalogGroups()]); };
 $("closeSetup").onclick = () => $("setupDialog").close();
 
 function formatDate(iso) {
   if (!iso) return "";
   return new Intl.DateTimeFormat("de-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
 }
-function escapeHtml(s="") { return s.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function escapeHtml(s="") { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function escapeAttr(s="") { return escapeHtml(s); }
 function toast(msg) {
   const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
@@ -188,9 +313,10 @@ async function start() {
     $("setupDialog").showModal();
   } else {
     db = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
-    await loadItems();
+    await Promise.all([loadItems(), loadCatalogGroups()]);
     db.channel("family-shopping-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "shopping_items" }, loadItems)
+      .on("postgres_changes", { event: "*", schema: "public", table: "catalog_groups" }, loadCatalogGroups)
       .subscribe(status => {
         if (status === "SUBSCRIBED") $("syncState").textContent = "Live synchronisiert";
       });

@@ -32,7 +32,7 @@
       <section class="add-card">
         <div class="section-title-row">
           <h2>Produkt hinzufügen</h2>
-          <button id="customToggle" class="text-btn">Eigenes Produkt</button>
+          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">Kategorien</button><button id="customToggle" class="text-btn">Eigenes Produkt</button></div>
         </div>
 
         <div id="catalogMode">
@@ -51,7 +51,8 @@
           <label for="customCategory">Kategorie</label>
           <select id="customCategory"></select>
           <label for="customSubgroup">Untergruppe</label>
-          <input id="customSubgroup" type="text" placeholder="z. B. Bad" />
+          <input id="customSubgroup" type="text" list="customSubgroupList" placeholder="z. B. Bad" />
+          <datalist id="customSubgroupList"></datalist>
           <button id="addCustomBtn" class="primary-btn">Zur Liste hinzufügen</button>
         </div>
       </section>
@@ -74,6 +75,35 @@
       <div class="profile-grid" id="profileGrid"></div>
       <button value="cancel" class="ghost-btn full">Schliessen</button>
     </form>
+  </dialog>
+
+
+  <dialog id="catalogDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>Kategorien verwalten</h2>
+        <button id="closeCatalogDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+      <p>Eigene Kategorien und Untergruppen werden in der Cloud gespeichert und sind deshalb für Leon, Papi, Mami und Anouk sichtbar.</p>
+
+      <div class="manage-block">
+        <label for="newCategoryName">Neue Kategorie</label>
+        <input id="newCategoryName" type="text" placeholder="z. B. Garten" />
+        <button id="addCategoryBtn" class="primary-btn" type="button">Kategorie erstellen</button>
+      </div>
+
+      <div class="manage-block">
+        <label for="manageCategorySelect">Kategorie für neue Untergruppe</label>
+        <select id="manageCategorySelect"></select>
+        <div id="manageSubgroupHint" class="small-muted"></div>
+        <label for="newSubgroupName">Neue Untergruppe</label>
+        <input id="newSubgroupName" type="text" placeholder="z. B. Pflanzenpflege" />
+        <button id="addSubgroupBtn" class="primary-btn" type="button">Untergruppe erstellen</button>
+      </div>
+
+      <h3 class="mini-heading">Eigene Einträge</h3>
+      <div id="customGroupList"></div>
+    </div>
   </dialog>
 
   <dialog id="setupDialog">
