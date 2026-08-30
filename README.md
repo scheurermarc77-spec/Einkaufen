@@ -132,3 +132,12 @@ Einmalig `weekly_shopping_items_v12_migration.sql` im Supabase SQL Editor ausfü
 - Eine alte `config.js` auf GitHub kann die Supabase-Zugangsdaten deshalb nicht mehr überschreiben.
 - Project URL und Publishable Key sind direkt und validiert in der App enthalten.
 - Cache wurde auf v16 erhöht und App-Code wird bevorzugt aus dem Netzwerk geladen.
+
+
+## Version 17 – ohne externe Supabase-JavaScript-Bibliothek
+
+- Die App lädt keine Supabase-Bibliothek mehr von jsDelivr oder einem anderen CDN.
+- Die Datenbank wird direkt über die Supabase REST API angesprochen.
+- Der Publishable Key wird nur im `apikey`-Header verwendet.
+- Die gemeinsame Liste und die persönlichen Listen werden alle 4 Sekunden sowie beim erneuten Öffnen der App synchronisiert.
+- Damit entfällt die Fehlerquelle, dass die externe Supabase-Bibliothek auf dem iPhone nicht geladen wird.

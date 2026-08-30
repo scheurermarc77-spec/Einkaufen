@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-  <link rel="stylesheet" href="styles.css?v=16" />
+  <link rel="stylesheet" href="styles.css?v=17" />
   <title>Familien Einkauf</title>
 </head>
 <body>
@@ -161,20 +161,18 @@
   <dialog id="setupDialog">
     <div class="dialog-card">
       <h2>Cloud-Verbindung nicht erreichbar</h2>
-      <p>Die App konnte Supabase momentan nicht erreichen. Prüfe die Internetverbindung und lade die App erneut.</p>
+      <p>Die App konnte die gemeinsame Datenbank momentan nicht erreichen. Prüfe die Internetverbindung und versuche es erneut.</p>
       <button id="closeSetup" class="primary-btn full">Verstanden</button>
     </div>
   </dialog>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
+<script>
     window.APP_CONFIG = Object.freeze({
       SUPABASE_URL: "https://kfpxheegmeupnuzqjqqt.supabase.co",
       SUPABASE_ANON_KEY: "sb_publishable_vlP2dIHDTK-VY5LK-jeS_w_tN04WaK0",
       HOUSEHOLD_ID: "leon-papi-mami-anouk"
     });
   </script>
-<script src="products.js?v=16"></script>
-  <script src="app.js?v=16"></script>
+<script src="products.js?v=17"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>

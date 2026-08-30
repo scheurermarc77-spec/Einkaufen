@@ -16,6 +16,153 @@ function validConfig(candidate) {
 }
 
 const config = validConfig(window.APP_CONFIG) ? window.APP_CONFIG : BUILTIN_CONFIG;
+
+class RestQuery {
+  constructor(client, table) {
+    this.client = client;
+    this.table = table;
+    this.method = "GET";
+    this.body = null;
+    this.selectColumns = null;
+    this.filters = [];
+    this.orders = [];
+  }
+
+  select(columns = "*") {
+    this.method = "GET";
+    this.selectColumns = columns;
+    return this;
+  }
+
+  insert(payload) {
+    this.method = "POST";
+    this.body = payload;
+    return this;
+  }
+
+  update(payload) {
+    this.method = "PATCH";
+    this.body = payload;
+    return this;
+  }
+
+  delete() {
+    this.method = "DELETE";
+    return this;
+  }
+
+  eq(column, value) {
+    this.filters.push([column, value]);
+    return this;
+  }
+
+  order(column, options = {}) {
+    this.orders.push([column, options.ascending !== false ? "asc" : "desc"]);
+    return this;
+  }
+
+  then(resolve, reject) {
+    return this.execute().then(resolve, reject);
+  }
+
+  async execute() {
+    const url = new URL(`${this.client.url}/rest/v1/${encodeURIComponent(this.table)}`);
+
+    if (this.method === "GET") {
+      url.searchParams.set("select", this.selectColumns || "*");
+    }
+
+    for (const [column, value] of this.filters) {
+      let encoded;
+      if (value === null) encoded = "null";
+      else if (typeof value === "boolean") encoded = value ? "true" : "false";
+      else encoded = String(value);
+      url.searchParams.append(column, `eq.${encoded}`);
+    }
+
+    if (this.orders.length) {
+      url.searchParams.set(
+        "order",
+        this.orders.map(([column, direction]) => `${column}.${direction}`).join(",")
+      );
+    }
+
+    const headers = {
+      "apikey": this.client.key,
+      "Accept": "application/json"
+    };
+
+    const options = {
+      method: this.method,
+      headers,
+      cache: "no-store"
+    };
+
+    if (this.method !== "GET") {
+      headers["Content-Type"] = "application/json";
+      headers["Prefer"] = "return=minimal";
+      if (this.body !== null) options.body = JSON.stringify(this.body);
+    }
+
+    try {
+      const response = await fetch(url.toString(), options);
+      const text = await response.text();
+
+      let payload = null;
+      if (text) {
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = text;
+        }
+      }
+
+      if (!response.ok) {
+        const message =
+          (payload && typeof payload === "object" && (payload.message || payload.error_description || payload.error)) ||
+          (typeof payload === "string" && payload) ||
+          `HTTP ${response.status}`;
+
+        return {
+          data: null,
+          error: {
+            message: String(message),
+            status: response.status,
+            details: payload
+          }
+        };
+      }
+
+      return {
+        data: this.method === "GET" ? (payload || []) : payload,
+        error: null
+      };
+    } catch (err) {
+      return {
+        data: null,
+        error: {
+          message: err?.message || "Netzwerkfehler",
+          details: err
+        }
+      };
+    }
+  }
+}
+
+class RestClient {
+  constructor(url, key) {
+    this.url = String(url || "").replace(/\/+$/, "");
+    this.key = key;
+  }
+
+  from(table) {
+    return new RestQuery(this, table);
+  }
+}
+
+function createDatabaseClient(url, key) {
+  return new RestClient(url, key);
+}
 let db = null;
 let currentPerson = localStorage.getItem("family-shop-person") || "";
 let items = [];
@@ -36,7 +183,7 @@ async function cleanupOldAppCaches() {
   try {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter(k => k.startsWith("family-shop-") && k !== "family-shop-v14")
+      .filter(k => k.startsWith("family-shop-") && k !== "family-shop-v17")
       .map(k => caches.delete(k)));
   } catch (_) {}
 }
@@ -601,6 +748,7 @@ async function loadItems() {
     .order("created_at", { ascending: false });
   if (error) {
     $("syncState").textContent = "Cloud-Verbindung fehlgeschlagen";
+    console.warn("shopping_items:", error);
     return;
   }
   items = data || [];
@@ -888,20 +1036,40 @@ async function start() {
   await cleanupOldAppCaches();
   initProfile();
   buildCatalog();
-  if (!configured() || !window.supabase?.createClient) {
+  if (!configured()) {
     $("syncState").textContent = "Cloud-Verbindung konnte nicht gestartet werden";
     $("setupDialog").showModal();
   } else {
-    db = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
-    await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]);
-    db.channel("family-shopping-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "shopping_items" }, loadItems)
-      .on("postgres_changes", { event: "*", schema: "public", table: "weekly_shopping_items" }, loadWeeklyItems)
-      .on("postgres_changes", { event: "*", schema: "public", table: "catalog_groups" }, loadCatalogGroups)
-      .on("postgres_changes", { event: "*", schema: "public", table: "catalog_products" }, loadCatalogProducts)
-      .subscribe(status => {
-        if (status === "SUBSCRIBED") $("syncState").textContent = activeListMode === "weekly" ? "Persönliche Liste synchronisiert" : "Live synchronisiert";
-      });
+    db = createDatabaseClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+
+    const results = await Promise.all([
+      loadItems(),
+      loadWeeklyItems(),
+      loadCatalogGroups(),
+      loadCatalogProducts()
+    ]);
+
+    // Statt einer externen Realtime-Bibliothek wird regelmässig synchronisiert.
+    window.setInterval(async () => {
+      if (document.hidden || !db) return;
+      await Promise.all([
+        loadItems(),
+        loadWeeklyItems(),
+        loadCatalogGroups(),
+        loadCatalogProducts()
+      ]);
+    }, 4000);
+
+    document.addEventListener("visibilitychange", async () => {
+      if (!document.hidden && db) {
+        await Promise.all([
+          loadItems(),
+          loadWeeklyItems(),
+          loadCatalogGroups(),
+          loadCatalogProducts()
+        ]);
+      }
+    });
   }
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }

@@ -1,10 +1,10 @@
-const CACHE = "family-shop-v16";
+const CACHE = "family-shop-v17";
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css?v=16",
-  "./app.js?v=16",
-  "./products.js?v=16",
+  "./styles.css?v=17",
+  "./app.js?v=17",
+  "./products.js?v=17",
   "./manifest.webmanifest"
 ];
 
@@ -25,7 +25,6 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
-  // Never let stale app code win over the network.
   event.respondWith(
     fetch(event.request, { cache: "no-store" })
       .catch(() => caches.match(event.request))
