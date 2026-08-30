@@ -108,3 +108,11 @@ Einmalig `weekly_shopping_items_v12_migration.sql` im Supabase SQL Editor ausfü
 - In der persönlichen Einkaufsliste wird keine aktuelle Kalenderwoche und kein Datumsbereich mehr angezeigt.
 - Die Liste bleibt weiterhin dauerhaft bestehen.
 - «Häkchen zurücksetzen» bleibt für den nächsten Einkauf verfügbar.
+
+
+## Version 14 – Kalenderwoche vollständig entfernt
+
+- Es gibt nirgends mehr eine Anzeige der aktuellen Kalenderwoche oder eines Datumsbereichs.
+- Die persönliche Einkaufsliste ist dauerhaft.
+- Alte PWA-/Service-Worker-Caches werden automatisch entfernt.
+- CSS und JavaScript werden mit Versionskennung geladen, damit iPhones sicher die neue Version beziehen.

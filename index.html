@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=14" />
   <title>Familien Einkauf</title>
 </head>
 <body>
@@ -37,13 +37,7 @@
           </div>
           <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
         </div>
-
-        
-        <div id="weeklyPeriod" class="weekly-period hidden">
-          <button id="resetWeeklyBtn" class="reset-weekly-btn" type="button">↺ Häkchen zurücksetzen</button>
-        </div>
-
-        <div class="list-toolbar">
+<div class="list-toolbar">
           <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
           <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
         </div>
@@ -173,8 +167,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-  <script src="products.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=14"></script>
+  <script src="products.js?v=14"></script>
+  <script src="app.js?v=14"></script>
 </body>
 </html>

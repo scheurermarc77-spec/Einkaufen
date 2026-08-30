@@ -483,3 +483,9 @@ main {
 .weekly-period span {
   display: none;
 }
+
+
+/* v14 – Kalenderwochenanzeige vollständig entfernt */
+.weekly-period {
+  display: none !important;
+}

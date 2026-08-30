@@ -14,6 +14,17 @@ let speechListening = false;
 
 const $ = (id) => document.getElementById(id);
 
+
+async function cleanupOldAppCaches() {
+  if (!("caches" in window)) return;
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys
+      .filter(k => k.startsWith("family-shop-") && k !== "family-shop-v14")
+      .map(k => caches.delete(k)));
+  } catch (_) {}
+}
+
 function configured() {
   return config.SUPABASE_URL.startsWith("http") && !config.SUPABASE_ANON_KEY.startsWith("HIER_");
 }
@@ -33,7 +44,6 @@ function updateListModeUI() {
   $("addSectionTitle").textContent = weekly
     ? "➕ Persönliche Liste ergänzen"
     : "➕ Einkaufsliste ergänzen";
-  if ($("weeklyPeriod")) $("weeklyPeriod").classList.toggle("hidden", !weekly);
   localStorage.setItem("family-shop-list-mode", activeListMode);
   hidePurchased = false;
   renderList();
@@ -859,6 +869,7 @@ function toast(msg) {
 }
 
 async function start() {
+  await cleanupOldAppCaches();
   initProfile();
   buildCatalog();
   if (!configured()) {
