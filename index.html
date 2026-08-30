@@ -42,28 +42,24 @@
       <section class="add-card">
         <div class="section-title-row">
           <h2>Liste ergänzen</h2>
-          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">Kategorien</button><button id="customToggle" class="text-btn">Eigenes Produkt</button></div>
+          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">Kategorien</button></div>
         </div>
 
         <div id="catalogMode">
-          <label for="categorySelect">Kategorie</label>
-          <select id="categorySelect"></select>
-          <label for="subgroupSelect">Untergruppe</label>
-          <select id="subgroupSelect"></select>
-          <label for="productSearch">Produkt</label>
+          <label for="productSearch">Suchen</label>
           <input id="productSearch" type="search" placeholder="Produkt suchen …" autocomplete="off" />
-          <div id="productGrid" class="product-grid"></div>
-        </div>
 
-        <div id="customMode" class="hidden">
-          <label for="customName">Produktname</label>
-          <input id="customName" type="text" placeholder="z. B. Spezialreiniger" />
-          <label for="customCategory">Kategorie</label>
-          <select id="customCategory"></select>
-          <label for="customSubgroup">Untergruppe</label>
-          <input id="customSubgroup" type="text" list="customSubgroupList" placeholder="z. B. Bad" />
-          <datalist id="customSubgroupList"></datalist>
-          <button id="addCustomBtn" class="primary-btn">Zur Liste hinzufügen</button>
+          <details class="browse-details">
+            <summary>Nach Kategorie durchsuchen</summary>
+            <div class="browse-controls">
+              <label for="categorySelect">Kategorie</label>
+              <select id="categorySelect"></select>
+              <label for="subgroupSelect">Untergruppe</label>
+              <select id="subgroupSelect"></select>
+            </div>
+          </details>
+
+          <div id="productGrid" class="product-grid"></div>
         </div>
       </section>
     </main>
@@ -111,19 +107,43 @@
   <dialog id="newProductDialog">
     <div class="dialog-card">
       <div class="section-title-row">
-        <h2>Neues Produkt</h2>
+        <h2>Produkt aufnehmen?</h2>
         <button id="closeNewProductDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
       </div>
-      <p><strong id="newProductNameLabel"></strong> ist noch nicht im Produktkatalog. Soll das Produkt in die gemeinsame Datenbank aufgenommen werden?</p>
 
-      <label for="newProductCategory">Kategorie</label>
-      <select id="newProductCategory"></select>
+      <p><strong id="newProductNameLabel"></strong> wurde nicht gefunden. Soll dieses Produkt in die gemeinsame Datenbank aufgenommen werden?</p>
 
-      <label for="newProductSubgroup">Untergruppe</label>
-      <select id="newProductSubgroup"></select>
-      <div id="newProductSubgroupHint" class="small-muted"></div>
+      <div class="selection-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <label for="newProductCategory">Kategorie auswählen</label>
+          <select id="newProductCategory"></select>
 
-      <button id="saveNewProductBtn" class="primary-btn" type="button">Aufnehmen & auf Liste setzen</button>
+          <div id="newCategoryInline" class="inline-create hidden">
+            <label for="newProductCategoryName">Neue Kategorie</label>
+            <input id="newProductCategoryName" type="text" placeholder="z. B. Tierbedarf" autocomplete="off" />
+            <div class="small-muted">Die neue Kategorie wird beim Speichern für alle erstellt.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newProductSubgroupStep" class="selection-step hidden">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <label for="newProductSubgroup">Untergruppe auswählen</label>
+          <select id="newProductSubgroup"></select>
+
+          <div id="newSubgroupInline" class="inline-create hidden">
+            <label for="newProductSubgroupName">Neue Untergruppe</label>
+            <input id="newProductSubgroupName" type="text" placeholder="z. B. Katzenfutter" autocomplete="off" />
+            <div class="small-muted">Die neue Untergruppe wird beim Speichern für alle erstellt.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newProductChoiceHint" class="small-muted choice-hint">Zuerst eine Kategorie auswählen.</div>
+
+      <button id="saveNewProductBtn" class="primary-btn" type="button" disabled>In Datenbank aufnehmen & auf Liste setzen</button>
       <button id="cancelNewProductBtn" class="ghost-btn full dialog-secondary" type="button">Abbrechen</button>
     </div>
   </dialog>

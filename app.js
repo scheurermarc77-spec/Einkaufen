@@ -60,8 +60,12 @@ function buildCatalog() {
   $("categorySelect").addEventListener("change", refreshSubgroups);
   $("subgroupSelect").addEventListener("change", renderProducts);
   $("productSearch").addEventListener("input", renderProducts);
-  $("customCategory").addEventListener("change", refreshCustomSubgroups);
-  $("newProductCategory").addEventListener("change", refreshNewProductSubgroups);
+
+  $("newProductCategory").addEventListener("change", handleNewProductCategoryChange);
+  $("newProductCategoryName").addEventListener("input", handleNewProductCategoryNameInput);
+  $("newProductSubgroup").addEventListener("change", handleNewProductSubgroupChange);
+  $("newProductSubgroupName").addEventListener("input", updateNewProductSaveState);
+
   refreshSubgroups();
 }
 
@@ -69,9 +73,7 @@ function refreshCategorySelectors() {
   const categories = getAllCategories();
   const options = categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`);
   preserveSelectValue($("categorySelect"), options);
-  preserveSelectValue($("customCategory"), options);
   preserveSelectValue($("manageCategorySelect"), options);
-  refreshCustomSubgroups();
   refreshManageSubgroupList();
 }
 
@@ -83,12 +85,6 @@ function refreshSubgroups() {
   renderProducts();
 }
 
-function refreshCustomSubgroups() {
-  const cat = $("customCategory").value;
-  const groups = getSubgroups(cat);
-  $("customSubgroupList").innerHTML = groups.map(g => `<option value="${escapeAttr(g)}"></option>`).join("");
-  if (!$("customSubgroup").value && groups.length) $("customSubgroup").placeholder = `z. B. ${groups[0]}`;
-}
 
 function allCatalogProducts() {
   const all = [];
@@ -159,9 +155,9 @@ function renderProducts() {
     ? `<div class="new-product-suggestion">
         <div class="new-product-copy">
           <strong>„${escapeHtml(rawQuery)}“ noch nicht vorhanden?</strong>
-          <span>Du kannst dieses Produkt in die gemeinsame Datenbank aufnehmen.</span>
+          <span>Nicht gefunden? In die gemeinsame Datenbank aufnehmen und Kategorie sowie Untergruppe festlegen.</span>
         </div>
-        <button class="primary-btn compact-btn" id="offerNewProductBtn" type="button">Produkt aufnehmen</button>
+        <button class="primary-btn compact-btn" id="offerNewProductBtn" type="button">In Datenbank aufnehmen</button>
       </div>`
     : "";
 
@@ -184,25 +180,6 @@ $("productGrid").addEventListener("click", e => {
   addItem(b.dataset.name, b.dataset.category || $("categorySelect").value, b.dataset.subgroup);
 });
 
-$("customToggle").onclick = () => {
-  $("catalogMode").classList.toggle("hidden");
-  $("customMode").classList.toggle("hidden");
-  $("customToggle").textContent = $("customMode").classList.contains("hidden") ? "Eigenes Produkt" : "Katalog anzeigen";
-};
-
-$("addCustomBtn").onclick = async () => {
-  const name = $("customName").value.trim();
-  if (!name) return toast("Bitte Produktname eingeben");
-  const cat = $("customCategory").value;
-  const subgroup = $("customSubgroup").value.trim() || "Eigene Produkte";
-  const groupOk = await ensureCatalogGroup(cat, subgroup);
-  if (!groupOk) return;
-  const productOk = await saveCatalogProduct(name, cat, subgroup);
-  if (!productOk) return;
-  await addItem(name, cat, subgroup);
-  $("customName").value = "";
-  $("customSubgroup").value = "";
-};
 
 
 function openNewProductDialog(name) {
@@ -215,42 +192,131 @@ function openNewProductDialog(name) {
   pendingNewProductName = cleanName;
   $("newProductNameLabel").textContent = cleanName;
 
+  // Schritt 1: Kategorie
   const categories = getAllCategories();
-  $("newProductCategory").innerHTML = categories
-    .map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`)
-    .join("");
+  $("newProductCategory").innerHTML = [
+    `<option value="">Kategorie auswählen …</option>`,
+    ...categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`),
+    `<option value="__new__">＋ Neue Kategorie erstellen</option>`
+  ].join("");
 
-  // Aktuelle Kategorie möglichst übernehmen
-  const currentCategory = $("categorySelect").value;
-  if (categories.includes(currentCategory)) $("newProductCategory").value = currentCategory;
+  $("newProductCategory").value = "";
+  $("newProductCategoryName").value = "";
+  $("newCategoryInline").classList.add("hidden");
 
-  refreshNewProductSubgroups();
+  // Schritt 2 zunächst ausblenden
+  $("newProductSubgroupStep").classList.add("hidden");
+  $("newProductSubgroup").innerHTML = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
 
-  // Aktuelle Untergruppe möglichst übernehmen
-  const currentSubgroup = $("subgroupSelect").value;
-  if (currentSubgroup && currentSubgroup !== "__all" &&
-      [...$("newProductSubgroup").options].some(o => o.value === currentSubgroup)) {
-    $("newProductSubgroup").value = currentSubgroup;
-  }
+  $("newProductChoiceHint").textContent = "Zuerst eine Kategorie auswählen.";
+  $("saveNewProductBtn").disabled = true;
 
   $("newProductDialog").showModal();
 }
 
-function refreshNewProductSubgroups() {
-  const category = $("newProductCategory").value;
-  const groups = getSubgroups(category);
-  $("newProductSubgroup").innerHTML = groups
-    .map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)
-    .join("");
+function selectedNewProductCategory() {
+  const selection = $("newProductCategory").value;
+  if (selection === "__new__") return $("newProductCategoryName").value.trim().replace(/\s+/g, " ");
+  return selection;
+}
 
-  if (groups.length) {
-    $("newProductSubgroup").disabled = false;
-    $("saveNewProductBtn").disabled = false;
-    $("newProductSubgroupHint").textContent = "";
+function selectedNewProductSubgroup() {
+  const selection = $("newProductSubgroup").value;
+  if (selection === "__new__") return $("newProductSubgroupName").value.trim().replace(/\s+/g, " ");
+  return selection;
+}
+
+function handleNewProductCategoryChange() {
+  const selection = $("newProductCategory").value;
+  const creating = selection === "__new__";
+
+  $("newCategoryInline").classList.toggle("hidden", !creating);
+
+  if (!selection) {
+    $("newProductSubgroupStep").classList.add("hidden");
+    $("newProductChoiceHint").textContent = "Zuerst eine Kategorie auswählen.";
+    updateNewProductSaveState();
+    return;
+  }
+
+  if (creating) {
+    $("newProductCategoryName").focus();
+    $("newProductSubgroupStep").classList.toggle("hidden", !$("newProductCategoryName").value.trim());
   } else {
-    $("newProductSubgroup").disabled = true;
-    $("saveNewProductBtn").disabled = true;
-    $("newProductSubgroupHint").textContent = "Für diese Kategorie ist noch keine Untergruppe vorhanden. Erstelle sie zuerst unter «Kategorien».";
+    populateNewProductSubgroups(selection);
+    $("newProductSubgroupStep").classList.remove("hidden");
+  }
+
+  updateNewProductSaveState();
+}
+
+function handleNewProductCategoryNameInput() {
+  const category = $("newProductCategoryName").value.trim();
+
+  if (!category) {
+    $("newProductSubgroupStep").classList.add("hidden");
+    $("newProductChoiceHint").textContent = "Name der neuen Kategorie eingeben.";
+    updateNewProductSaveState();
+    return;
+  }
+
+  // Eine neue Kategorie hat noch keine Untergruppen:
+  // deshalb direkt die Möglichkeit zum Erstellen anbieten.
+  $("newProductSubgroup").innerHTML = [
+    `<option value="">Untergruppe auswählen …</option>`,
+    `<option value="__new__">＋ Neue Untergruppe erstellen</option>`
+  ].join("");
+  $("newProductSubgroup").value = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+  $("newProductSubgroupStep").classList.remove("hidden");
+  $("newProductChoiceHint").textContent = "Jetzt eine Untergruppe auswählen oder neu erstellen.";
+  updateNewProductSaveState();
+}
+
+function populateNewProductSubgroups(category) {
+  const groups = getSubgroups(category);
+  $("newProductSubgroup").innerHTML = [
+    `<option value="">Untergruppe auswählen …</option>`,
+    ...groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`),
+    `<option value="__new__">＋ Neue Untergruppe erstellen</option>`
+  ].join("");
+  $("newProductSubgroup").value = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+
+  $("newProductChoiceHint").textContent = groups.length
+    ? "Untergruppe auswählen. Falls nichts passt, direkt eine neue erstellen."
+    : "Noch keine Untergruppe vorhanden. Erstelle direkt eine neue.";
+}
+
+function handleNewProductSubgroupChange() {
+  const creating = $("newProductSubgroup").value === "__new__";
+  $("newSubgroupInline").classList.toggle("hidden", !creating);
+
+  if (creating) {
+    $("newProductSubgroupName").focus();
+    $("newProductChoiceHint").textContent = "Name der neuen Untergruppe eingeben.";
+  } else if ($("newProductSubgroup").value) {
+    $("newProductChoiceHint").textContent = "Kategorie und Untergruppe gewählt.";
+  }
+
+  updateNewProductSaveState();
+}
+
+function updateNewProductSaveState() {
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
+
+  const categoryValid = Boolean(category);
+  const subgroupValid = Boolean(subgroup);
+
+  $("saveNewProductBtn").disabled = !(categoryValid && subgroupValid);
+
+  if (categoryValid && subgroupValid) {
+    $("newProductChoiceHint").textContent = `Wird gespeichert unter: ${category} · ${subgroup}`;
   }
 }
 
@@ -261,19 +327,42 @@ $("saveNewProductBtn").onclick = async () => {
   if (!currentPerson) return $("profileDialog").showModal();
 
   const name = pendingNewProductName;
-  const category = $("newProductCategory").value;
-  const subgroup = $("newProductSubgroup").value;
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
 
-  if (!name || !category || !subgroup) return toast("Kategorie und Untergruppe wählen");
+  if (!name) return;
+  if (!category) return toast("Bitte Kategorie auswählen oder erstellen");
+  if (!subgroup) return toast("Bitte Untergruppe auswählen oder erstellen");
 
-  const saved = await saveCatalogProduct(name, category, subgroup);
-  if (!saved) return;
+  $("saveNewProductBtn").disabled = true;
+
+  // Neue Kategorie/Untergruppe werden automatisch in der gemeinsamen Cloud angelegt.
+  const categoryOk = await ensureCatalogGroup(category, null);
+  if (!categoryOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  const subgroupOk = await ensureCatalogGroup(category, subgroup);
+  if (!subgroupOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  await loadCatalogGroups();
+
+  const productOk = await saveCatalogProduct(name, category, subgroup);
+  if (!productOk) {
+    updateNewProductSaveState();
+    return;
+  }
 
   $("newProductDialog").close();
   $("productSearch").value = "";
   await addItem(name, category, subgroup);
   renderProducts();
 };
+
 
 async function saveCatalogProduct(name, category, subgroup) {
   if (!db) return false;
@@ -447,20 +536,47 @@ $("addSubgroupBtn").onclick = async () => {
 
 async function ensureCatalogGroup(category, subcategory = null) {
   if (!db || !category) return false;
-  const normalizedSub = subcategory?.trim() || null;
-  const exists = customGroups.some(g => g.category.toLowerCase() === category.toLowerCase() && (g.subcategory || "").toLowerCase() === (normalizedSub || "").toLowerCase());
-  const staticExists = normalizedSub && Object.keys(PRODUCT_CATALOG[category] || {}).some(g => g.toLowerCase() === normalizedSub.toLowerCase());
-  if (exists || staticExists) return true;
+
+  const cleanCategory = category.trim().replace(/\s+/g, " ");
+  const normalizedSub = subcategory?.trim().replace(/\s+/g, " ") || null;
+
+  const exists = customGroups.some(
+    g => g.category.toLowerCase() === cleanCategory.toLowerCase() &&
+      (g.subcategory || "").toLowerCase() === (normalizedSub || "").toLowerCase()
+  );
+
+  const matchingStaticCategory = Object.keys(PRODUCT_CATALOG)
+    .find(c => c.toLowerCase() === cleanCategory.toLowerCase());
+
+  const staticCategoryExists = Boolean(matchingStaticCategory) && !normalizedSub;
+  const staticSubgroupExists = normalizedSub && matchingStaticCategory &&
+    Object.keys(PRODUCT_CATALOG[matchingStaticCategory] || {})
+      .some(g => g.toLowerCase() === normalizedSub.toLowerCase());
+
+  if (exists || staticCategoryExists || staticSubgroupExists) return true;
+
   const { error } = await db.from("catalog_groups").insert({
-    category: category.trim(),
+    category: cleanCategory,
     subcategory: normalizedSub,
     created_by: currentPerson || "Unbekannt"
   });
+
   if (error) {
-    if (String(error.message || "").includes("catalog_groups")) toast("Kategorien-Funktion muss zuerst in Supabase aktiviert werden");
-    else toast("Kategorie konnte nicht gespeichert werden");
+    const msg = String(error.message || "");
+    // Ein paralleles Gerät könnte denselben Eintrag gerade erstellt haben.
+    if (msg.includes("duplicate") || msg.includes("unique")) {
+      await loadCatalogGroups();
+      return true;
+    }
+    if (msg.includes("catalog_groups") || msg.includes("relation")) {
+      toast("Kategorien-Funktion muss zuerst in Supabase aktiviert werden");
+    } else {
+      toast("Kategorie oder Untergruppe konnte nicht gespeichert werden");
+    }
     return false;
   }
+
+  await loadCatalogGroups();
   return true;
 }
 

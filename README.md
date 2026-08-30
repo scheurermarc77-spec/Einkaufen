@@ -39,3 +39,14 @@ Untergruppe ausgewählt. Das neue Produkt ist anschliessend für alle Familienmi
 verfügbar und wird direkt auf die Einkaufsliste gesetzt.
 
 Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor ausgeführt werden.
+
+
+## Version 7 – vereinfachte Produktsuche
+
+- Das Hauptfeld heisst neu **Suchen**.
+- Beim Suchen werden immer alle Kategorien und Untergruppen berücksichtigt.
+- Gefundene Produkte können direkt auf die Einkaufsliste gesetzt werden.
+- Ist ein Produkt nicht vorhanden, kann es direkt in die gemeinsame Produktdatenbank aufgenommen werden.
+- Dabei wird zuerst die Kategorie und danach die Untergruppe gewählt.
+- Falls keine passende Kategorie oder Untergruppe vorhanden ist, kann sie direkt im selben Dialog neu erstellt werden.
+- Die separat sichtbare Eingabe «Produktname / Eigenes Produkt» wurde entfernt, da neue Produkte direkt über die Suche angelegt werden.
