@@ -17,40 +17,50 @@
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsame Liste</div>
+        <div class="eyebrow">Gemeinsam einkaufen</div>
         <h1>Familien Einkauf</h1>
       </div>
-      <button id="profileBtn" class="profile-pill">Profil</button>
+      <button id="profileBtn" class="profile-pill">👤 Profil</button>
     </header>
 
     <main>
       <section class="summary-card">
-        <div><strong id="openCount">0</strong><span>offen</span></div>
-        <div><strong id="doneCount">0</strong><span>gekauft</span></div>
-        <button id="clearPurchasedBtn" class="ghost-btn">Gekaufte ausblenden</button>
+        <div class="stat-chip stat-open"><span class="stat-icon">🛒</span><div><strong id="openCount">0</strong><span>Noch kaufen</span></div></div>
+        <div class="stat-chip stat-done"><span class="stat-icon">✅</span><div><strong id="doneCount">0</strong><span>Schon gekauft</span></div></div>
+        <button id="clearPurchasedBtn" class="ghost-btn">✅ Gekaufte ausblenden</button>
       </section>
 
-      <section class="list-section">
+      <section class="list-section list-card">
         <div class="section-title-row sticky-title">
-          <h2>Einkaufsliste</h2>
+          <div>
+            <h2>🛒 Einkaufsliste</h2>
+            <div class="section-hint">Hier siehst du die aktuelle gemeinsame Liste. Antippen = gekauft.</div>
+          </div>
           <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
         </div>
         <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
         <div id="shoppingList"></div>
       </section>
 
-      <section class="add-card">
+      <section class="add-card add-card-color">
         <div class="section-title-row">
-          <h2>Liste ergänzen</h2>
-          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">Kategorien</button></div>
+          <div>
+            <h2>➕ Einkaufsliste ergänzen</h2>
+            <div class="section-hint">Hier suchst du Produkte und fügst sie zur Liste hinzu.</div>
+          </div>
+          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">🗂 Kategorien</button></div>
         </div>
 
         <div id="catalogMode">
-          <label for="productSearch">Suchen</label>
-          <input id="productSearch" type="search" placeholder="Produkt suchen …" autocomplete="off" />
+          <label for="productSearch">🔎 Suchen</label>
+          <div class="search-row">
+            <input id="productSearch" type="search" placeholder="Produkt suchen oder sprechen …" autocomplete="off" />
+            <button id="speechBtn" class="speech-btn" type="button" aria-label="Spracheingabe starten">🎤</button>
+          </div>
+          <div id="speechHint" class="small-muted">Tipp: Mit 🎤 kannst du den Suchtext mündlich eingeben.</div>
 
           <details class="browse-details">
-            <summary>Nach Kategorie durchsuchen</summary>
+            <summary>🗂 Nach Kategorie stöbern</summary>
             <div class="browse-controls">
               <label for="categorySelect">Kategorie</label>
               <select id="categorySelect"></select>

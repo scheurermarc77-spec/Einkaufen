@@ -50,3 +50,11 @@ Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor 
 - Dabei wird zuerst die Kategorie und danach die Untergruppe gewählt.
 - Falls keine passende Kategorie oder Untergruppe vorhanden ist, kann sie direkt im selben Dialog neu erstellt werden.
 - Die separat sichtbare Eingabe «Produktname / Eigenes Produkt» wurde entfernt, da neue Produkte direkt über die Suche angelegt werden.
+
+
+## Version 8 – übersichtlichere Bedienung
+
+- Einkaufsliste und Einkaufsliste ergänzen sind optisch klar getrennt.
+- Mehr Farben, Symbole und erklärende Hinweise machen die App selbsterklärender.
+- In der Suche kann der Text mit dem Mikrofon-Button mündlich eingegeben werden (falls der Browser Spracheingabe unterstützt).
+- Suchresultate, Gruppen und Statusanzeigen wurden optisch klarer gestaltet.

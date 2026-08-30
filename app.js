@@ -7,6 +7,8 @@ let customGroups = [];
 let cloudProducts = [];
 let pendingNewProductName = "";
 let hidePurchased = false;
+let speechRecognition = null;
+let speechListening = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -67,6 +69,7 @@ function buildCatalog() {
   $("newProductSubgroupName").addEventListener("input", updateNewProductSaveState);
 
   refreshSubgroups();
+  setupSpeechSearch();
 }
 
 function refreshCategorySelectors() {
@@ -85,6 +88,63 @@ function refreshSubgroups() {
   renderProducts();
 }
 
+
+
+function setSpeechState(listening, hint = "") {
+  speechListening = listening;
+  const btn = $("speechBtn");
+  if (!btn) return;
+  btn.classList.toggle("listening", listening);
+  btn.textContent = listening ? "⏹" : "🎤";
+  btn.setAttribute("aria-label", listening ? "Spracheingabe stoppen" : "Spracheingabe starten");
+  $("speechHint").textContent = hint || (listening ? "Ich höre zu … sprich jetzt den Suchbegriff." : "Tipp: Mit 🎤 kannst du den Suchtext mündlich eingeben.");
+}
+
+function setupSpeechSearch() {
+  const btn = $("speechBtn");
+  if (!btn) return;
+  const SpeechApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechApi) {
+    btn.disabled = true;
+    $("speechHint").textContent = "Spracheingabe wird auf diesem Gerät/Browser leider nicht unterstützt.";
+    return;
+  }
+
+  speechRecognition = new SpeechApi();
+  speechRecognition.lang = "de-CH";
+  speechRecognition.interimResults = false;
+  speechRecognition.maxAlternatives = 1;
+  speechRecognition.continuous = false;
+
+  speechRecognition.onstart = () => setSpeechState(true);
+  speechRecognition.onend = () => setSpeechState(false);
+  speechRecognition.onerror = () => {
+    setSpeechState(false, "Spracheingabe konnte nicht gestartet werden. Bitte nochmals versuchen.");
+  };
+  speechRecognition.onresult = (event) => {
+    const text = event.results?.[0]?.[0]?.transcript?.trim() || "";
+    if (text) {
+      $("productSearch").value = text;
+      renderProducts();
+      setSpeechState(false, `Gesucht nach: ${text}`);
+      toast(`Suche: ${text}`);
+    }
+  };
+
+  btn.onclick = () => {
+    try {
+      if (speechListening) speechRecognition.stop();
+      else speechRecognition.start();
+    } catch (err) {
+      setSpeechState(false, "Spracheingabe konnte nicht gestartet werden. Bitte nochmals versuchen.");
+    }
+  };
+}
+
+function colorIndexForKey(value = "") {
+  return [...String(value)].reduce((n, ch) => n + ch.charCodeAt(0), 0) % 6;
+}
 
 function allCatalogProducts() {
   const all = [];
@@ -146,7 +206,7 @@ function renderProducts() {
 
   const productButtons = products.map(p =>
     `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-category="${escapeAttr(p.category)}" data-subgroup="${escapeAttr(p.subgroup)}">
-      <span class="product-btn-name">${escapeHtml(p.name)}</span>
+      <span class="product-btn-name">➕ ${escapeHtml(p.name)}</span>
       ${q ? `<span class="product-btn-meta">${escapeHtml(p.category)} · ${escapeHtml(p.subgroup)}</span>` : ""}
     </button>`
   ).join("");
@@ -157,12 +217,12 @@ function renderProducts() {
           <strong>„${escapeHtml(rawQuery)}“ noch nicht vorhanden?</strong>
           <span>Nicht gefunden? In die gemeinsame Datenbank aufnehmen und Kategorie sowie Untergruppe festlegen.</span>
         </div>
-        <button class="primary-btn compact-btn" id="offerNewProductBtn" type="button">In Datenbank aufnehmen</button>
+        <button class="primary-btn compact-btn" id="offerNewProductBtn" type="button">➕ In Datenbank aufnehmen</button>
       </div>`
     : "";
 
   if (!products.length && !addNewOption) {
-    $("productGrid").innerHTML = `<div class="catalog-empty">Kein Produkt gefunden.</div>`;
+    $("productGrid").innerHTML = `<div class="catalog-empty">Kein Produkt gefunden. Gib einen anderen Suchbegriff ein oder nimm das Produkt neu in die Datenbank auf.</div>`;
   } else {
     $("productGrid").innerHTML = productButtons + addNewOption;
   }
@@ -454,9 +514,9 @@ function renderList() {
   const visible = hidePurchased ? items.filter(i => !i.purchased) : items;
   $("openCount").textContent = items.filter(i => !i.purchased).length;
   $("doneCount").textContent = items.filter(i => i.purchased).length;
-  $("clearPurchasedBtn").textContent = hidePurchased ? "Gekaufte anzeigen" : "Gekaufte ausblenden";
+  $("clearPurchasedBtn").textContent = hidePurchased ? "✅ Gekaufte anzeigen" : "✅ Gekaufte ausblenden";
   if (!visible.length) {
-    $("shoppingList").innerHTML = `<div class="empty">Die Einkaufsliste ist leer.</div>`;
+    $("shoppingList").innerHTML = `<div class="empty">🧺 Die Einkaufsliste ist leer. Ergänze unten neue Produkte.</div>`;
     return;
   }
   const groups = {};
@@ -466,8 +526,8 @@ function renderList() {
   }
   $("shoppingList").innerHTML = Object.entries(groups).map(([key, arr]) => {
     const [cat, sub] = key.split("|||");
-    return `<div class="group">
-      <div class="group-title"><span>${escapeHtml(cat)} · ${escapeHtml(sub)}</span><span>${arr.length}</span></div>
+    return `<div class="group group-color-${colorIndexForKey(key)}">
+      <div class="group-title"><span>📂 ${escapeHtml(cat)} · ${escapeHtml(sub)}</span><span class="group-count">${arr.length}</span></div>
       ${arr.map(renderItem).join("")}
     </div>`;
   }).join("");
@@ -480,9 +540,9 @@ function renderItem(i) {
     <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
     <div>
       <div class="item-name">${escapeHtml(i.product_name)}</div>
-      <div class="meta">Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
+      <div class="meta">📝 Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>✅ Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
     </div>
-    <button class="delete-btn" title="Löschen" aria-label="Löschen">×</button>
+    <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
   </div>`;
 }
 
