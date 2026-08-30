@@ -507,13 +507,34 @@ main {
   display: none !important;
 }
 
-  </style>
+  
+.list-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.reset-only {
+  background: #eef4ff;
+  color: #315f9b;
+}
+@media (max-width: 520px) {
+  .list-toolbar {
+    align-items: flex-start;
+  }
+  .list-toolbar-actions {
+    max-width: 62%;
+  }
+}
+
+</style>
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v18</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v19</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -535,7 +556,10 @@ main {
         </div>
 <div class="list-toolbar">
           <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
-          <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
+          <div class="list-toolbar-actions">
+            <button id="resetWeeklyBtn" class="small-action-btn reset-only hidden" type="button">↺ Häkchen zurücksetzen</button>
+            <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
+          </div>
         </div>
 
         <div id="shoppingList"></div>
@@ -919,6 +943,7 @@ function updateListModeUI() {
   $("addSectionTitle").textContent = weekly
     ? "➕ Persönliche Liste ergänzen"
     : "➕ Einkaufsliste ergänzen";
+  if ($("resetWeeklyBtn")) $("resetWeeklyBtn").classList.toggle("hidden", !weekly);
   localStorage.setItem("family-shop-list-mode", activeListMode);
   hidePurchased = false;
   renderList();
@@ -990,7 +1015,7 @@ function buildCatalog() {
 
   $("sharedModeBtn").addEventListener("click", () => switchListMode("shared"));
   $("weeklyModeBtn").addEventListener("click", () => switchListMode("weekly"));
-  $("resetWeeklyBtn").addEventListener("click", resetWeeklyChecks);
+  $("resetWeeklyBtn")?.addEventListener("click", resetWeeklyChecks);
 
   refreshSubgroups();
   setupSpeechSearch();
@@ -1749,6 +1774,7 @@ async function start() {
   initProfile();
   buildCatalog();
   db = createDatabaseClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+  $("syncState").textContent = "Verbinde mit Cloud …";
 
   await Promise.all([
     loadItems(),
@@ -1778,7 +1804,11 @@ async function start() {
     }
   });
 }
-start();
+start().catch(err => {
+  console.error("App-Start fehlgeschlagen:", err);
+  const state = document.getElementById("syncState");
+  if (state) state.textContent = "Startfehler: " + (err?.message || "unbekannt");
+});
 
   </script>
 
