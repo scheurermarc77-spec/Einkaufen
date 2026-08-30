@@ -1,0 +1,1786 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Familien Einkauf" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<title>Familien Einkauf</title>
+  <style>
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  color: #171717;
+  background: #f4f4f1;
+  --card: #ffffff;
+  --border: #deded9;
+  --muted: #6f716f;
+  --accent: #183a2e;
+  --accent-soft: #e8f0ec;
+  --danger: #9f2e2e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--card); min-height: 100vh; }
+#app { max-width: 780px; margin: 0 auto; background: #f7f7f5; min-height: 100vh; }
+.topbar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; padding: calc(18px + env(safe-area-inset-top)) 18px 14px; background: rgba(247,247,245,.94); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); }
+h1 { margin: 0; font-size: 26px; letter-spacing: -.5px; }
+h2 { margin: 0; font-size: 19px; }
+.eyebrow { text-transform: uppercase; font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+main { padding: 14px 14px calc(40px + env(safe-area-inset-bottom)); }
+.summary-card, .add-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 14px; box-shadow: 0 5px 18px rgba(0,0,0,.035); }
+.summary-card { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center; }
+.summary-card div { display: flex; flex-direction: column; }
+.summary-card strong { font-size: 25px; }
+.summary-card span { color: var(--muted); font-size: 12px; }
+.summary-card button { grid-column: 1 / -1; }
+.section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+label { display: block; color: var(--muted); font-size: 12px; margin: 11px 0 5px; }
+select, input { width: 100%; border: 1px solid var(--border); background: #fff; border-radius: 12px; font-size: 16px; padding: 12px; outline: none; }
+select:focus, input:focus { border-color: #8d9e96; box-shadow: 0 0 0 3px rgba(24,58,46,.08); }
+.product-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; max-height: 330px; overflow: auto; margin-top: 12px; padding-bottom: 2px; }
+.product-btn { text-align: left; border: 1px solid var(--border); background: #fafaf8; border-radius: 13px; padding: 10px 11px; font-size: 14px; min-height: 44px; }
+.product-btn:active { transform: scale(.985); background: var(--accent-soft); }
+.primary-btn, .ghost-btn, .profile-pill, .icon-btn, .text-btn { border: 0; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.primary-btn { width: 100%; background: var(--accent); color: white; padding: 13px 16px; margin-top: 14px; font-size: 15px; }
+.ghost-btn { background: #efefeb; padding: 10px 12px; color: #333; }
+.profile-pill { padding: 9px 12px; background: var(--accent-soft); color: var(--accent); }
+.icon-btn { width: 38px; height: 38px; background: #eee; font-size: 20px; }
+.text-btn { background: transparent; color: var(--accent); }
+.full { width: 100%; }
+.hidden { display: none !important; }
+.list-section { margin-top: 18px; }
+.sticky-title { margin-bottom: 5px; }
+.sync-state { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+.group { margin: 14px 0 18px; }
+.group-title { font-size: 13px; color: #555; font-weight: 700; margin: 0 4px 7px; display: flex; justify-content: space-between; }
+.item { background: #fff; border: 1px solid var(--border); border-radius: 15px; padding: 11px 12px; margin-bottom: 8px; display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; }
+.item.done { opacity: .66; }
+.item.done .item-name { text-decoration: line-through; }
+.check { appearance: none; width: 28px; height: 28px; border: 2px solid #9ca39f; border-radius: 50%; margin: 0; position: relative; }
+.check:checked { background: var(--accent); border-color: var(--accent); }
+.check:checked::after { content: "✓"; color: white; position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; }
+.item-name { font-weight: 700; margin-bottom: 4px; }
+.meta { font-size: 11px; color: var(--muted); line-height: 1.35; }
+.delete-btn { border: 0; background: transparent; color: #888; font-size: 21px; padding: 5px; }
+.empty { padding: 25px 15px; text-align: center; color: var(--muted); background: #fff; border: 1px dashed var(--border); border-radius: 15px; }
+dialog { border: 0; border-radius: 20px; padding: 0; max-width: 390px; width: calc(100% - 28px); box-shadow: 0 25px 80px rgba(0,0,0,.22); }
+dialog::backdrop { background: rgba(0,0,0,.35); backdrop-filter: blur(3px); }
+.dialog-card { padding: 20px; }
+.dialog-card p { color: var(--muted); line-height: 1.45; }
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.profile-choice { border: 1px solid var(--border); background: #fafaf8; padding: 15px 10px; border-radius: 14px; font-size: 16px; font-weight: 700; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #171717; color: white; padding: 10px 13px; border-radius: 10px; font-size: 13px; z-index: 20; }
+@media (min-width: 650px) { .product-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+.title-actions { display: flex; gap: 6px; align-items: center; }
+.catalog-empty { grid-column: 1 / -1; color: var(--muted); font-size: 13px; padding: 14px; border: 1px dashed var(--border); border-radius: 12px; background: #fafaf8; }
+.manage-block { background: #fafaf8; border: 1px solid var(--border); border-radius: 15px; padding: 13px; margin: 12px 0; }
+.small-muted { color: var(--muted); font-size: 11px; line-height: 1.4; margin-top: 5px; }
+.mini-heading { font-size: 14px; margin: 18px 0 8px; }
+.custom-group-row { background: #fff; border: 1px solid var(--border); border-radius: 13px; padding: 11px 12px; margin-bottom: 7px; }
+
+/* Globale Produktsuche */
+.product-btn-name {
+  display: block;
+  font-weight: 650;
+}
+.product-btn-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  opacity: 0.66;
+}
+
+
+/* Neue Produkte direkt aus der Suche in die gemeinsame Produktdatenbank aufnehmen */
+.new-product-suggestion {
+  grid-column: 1 / -1;
+  border: 1px solid #b9c9c1;
+  background: var(--accent-soft);
+  border-radius: 15px;
+  padding: 13px;
+  display: grid;
+  gap: 10px;
+}
+.new-product-copy {
+  display: grid;
+  gap: 3px;
+}
+.new-product-copy strong {
+  font-size: 14px;
+  color: var(--accent);
+}
+.new-product-copy span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.compact-btn {
+  width: auto;
+  margin-top: 0;
+  justify-self: start;
+  padding: 10px 13px;
+}
+.dialog-secondary {
+  margin-top: 9px;
+}
+button:disabled, select:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+
+/* v7 – Suche zuerst, neue Kategorie/Untergruppe direkt beim Produkt anlegen */
+.browse-details {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,255,255,.55);
+  overflow: hidden;
+}
+.browse-details summary {
+  padding: 12px 13px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  user-select: none;
+}
+.browse-controls {
+  padding: 0 13px 13px;
+}
+.selection-step {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  align-items: start;
+  margin-top: 14px;
+}
+.step-number {
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  margin-top: 25px;
+}
+.step-content {
+  min-width: 0;
+}
+.inline-create {
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px dashed #a8bcb2;
+  background: var(--accent-soft);
+  border-radius: 12px;
+}
+.choice-hint {
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: #f3f5f4;
+}
+
+
+/* v8 – übersichtlichere Oberfläche */
+:root {
+  --blue-soft: #e7f1ff;
+  --blue: #2d68c4;
+  --green-soft: #e8f6ee;
+  --green: #287a4d;
+  --yellow-soft: #fff5d9;
+  --yellow: #9a6a00;
+  --red-soft: #fde9e7;
+  --purple-soft: #f0e8ff;
+  --purple: #6b4ac9;
+}
+.list-card {
+  background: linear-gradient(180deg, #eff8f1 0%, #ffffff 100%);
+  border: 1px solid #d8eadf;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(25,53,39,.05);
+}
+.add-card-color {
+  background: linear-gradient(180deg, #eef4ff 0%, #ffffff 100%);
+  border-color: #dbe6fb;
+}
+.section-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.summary-card {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+}
+.stat-chip div { display: flex; flex-direction: column; }
+.stat-chip strong { font-size: 24px; line-height: 1; }
+.stat-chip span:last-child { font-size: 12px; color: var(--muted); }
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: rgba(255,255,255,.8);
+}
+.stat-open { background: var(--yellow-soft); }
+.stat-done { background: var(--green-soft); }
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 52px;
+  gap: 8px;
+  align-items: stretch;
+}
+.speech-btn {
+  border: 0;
+  border-radius: 12px;
+  background: var(--purple-soft);
+  color: var(--purple);
+  font-size: 20px;
+  font-weight: 700;
+}
+.speech-btn.listening {
+  background: #ffdfe0;
+  color: #b4232b;
+  animation: pulseMic 1.1s infinite;
+}
+@keyframes pulseMic {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.title-actions .text-btn {
+  background: rgba(45,104,196,.08);
+  color: var(--blue);
+  padding: 9px 12px;
+}
+.group {
+  margin: 14px 0 18px;
+  border-radius: 16px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #edf0ed;
+}
+.group-title {
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0 2px 9px;
+}
+.group-count {
+  min-width: 24px;
+  text-align: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.85);
+}
+.group-color-0 { background: #f5fbf6; border-color: #dceede; }
+.group-color-0 .group-title { color: #2c7747; }
+.group-color-1 { background: #f8f5ff; border-color: #e3dbfb; }
+.group-color-1 .group-title { color: #6848c4; }
+.group-color-2 { background: #eef7ff; border-color: #d7e7fb; }
+.group-color-2 .group-title { color: #2d68c4; }
+.group-color-3 { background: #fff8ea; border-color: #f3e1ac; }
+.group-color-3 .group-title { color: #9a6a00; }
+.group-color-4 { background: #fff1ef; border-color: #f7d8d2; }
+.group-color-4 .group-title { color: #b94b3a; }
+.group-color-5 { background: #f1faf8; border-color: #d8efea; }
+.group-color-5 .group-title { color: #0d7765; }
+.item {
+  box-shadow: 0 2px 8px rgba(0,0,0,.03);
+}
+.item.done {
+  background: #f5fbf6;
+  border-color: #d7eadc;
+}
+.product-btn {
+  background: white;
+  border: 1px solid #dbe6fb;
+}
+.product-btn:active { background: #edf4ff; }
+.delete-btn { font-size: 16px; }
+.catalog-empty { background: #fff; }
+@media (max-width: 560px) {
+  .product-grid { grid-template-columns: 1fr; }
+  .summary-card { grid-template-columns: 1fr; }
+}
+
+
+/* v9 – Einkaufsliste steht im Fokus */
+main {
+  padding-top: 10px;
+}
+.list-section {
+  margin-top: 0;
+}
+.list-card {
+  background: #ffffff;
+  border: 1px solid #dfe7e2;
+  box-shadow: 0 5px 16px rgba(25,53,39,.045);
+}
+.list-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.open-count-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef3f0;
+  color: #516158;
+  font-size: 11px;
+  font-weight: 700;
+}
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 2px 0 12px;
+}
+.list-toolbar .sync-state {
+  margin: 0;
+}
+.small-action-btn {
+  border: 0;
+  border-radius: 10px;
+  background: #f2f3f2;
+  color: #5e625f;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.flat-shopping-list {
+  display: grid;
+  gap: 8px;
+}
+.flat-shopping-list .item {
+  margin-bottom: 0;
+  border-color: #e4e8e5;
+  box-shadow: none;
+}
+.flat-shopping-list .item:not(.done) {
+  border-left: 4px solid #4b8768;
+}
+.flat-shopping-list .item.done {
+  border-left: 4px solid #b8c8be;
+}
+.add-card-color {
+  margin-top: 16px;
+}
+
+
+/* v11 – gemeinsame Liste + persönliche Wochenliste */
+.section-hint {
+  display: none !important;
+}
+.list-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+  padding: 4px;
+  border-radius: 15px;
+  background: #e9ecea;
+}
+.mode-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 8px;
+  background: transparent;
+  color: #5a625d;
+  font-size: 13px;
+  font-weight: 750;
+}
+.mode-btn.active {
+  background: #fff;
+  color: #183a2e;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+#weeklyModeBtn.active {
+  color: #315f9b;
+  background: #f2f7ff;
+}
+.weekly-period {
+  margin: -2px 0 10px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  background: #eef4ff;
+  color: #315f9b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.red-search {
+  border: 2px solid #d84a4a !important;
+}
+.red-search:focus {
+  border-color: #bd3030 !important;
+  box-shadow: 0 0 0 3px rgba(216,74,74,.13) !important;
+}
+.weekly-item {
+  border-left: 4px solid #4979b8 !important;
+  background: #fbfdff;
+}
+.weekly-item.done {
+  border-left-color: #aebed3 !important;
+}
+.weekly-item-name {
+  margin: 0;
+}
+@media (max-width: 430px) {
+  .mode-btn {
+    font-size: 12px;
+    padding: 10px 5px;
+  }
+}
+
+
+/* v12 – dauerhafte persönliche Wocheneinkaufs-Grundliste */
+.weekly-period {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.weekly-period span {
+  font-size: 11px;
+  line-height: 1.3;
+}
+.reset-weekly-btn {
+  border: 0;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #315f9b;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .weekly-period {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .reset-weekly-btn {
+    width: 100%;
+  }
+}
+
+
+/* v13 – keine Wochenangabe mehr */
+.weekly-period {
+  justify-content: flex-end;
+}
+.weekly-period span {
+  display: none;
+}
+
+
+/* v14 – Kalenderwochenanzeige vollständig entfernt */
+.weekly-period {
+  display: none !important;
+}
+
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Gemeinsam einkaufen · v18</div>
+        <h1>Familien Einkauf</h1>
+      </div>
+      <button id="profileBtn" class="profile-pill">👤 Profil</button>
+    </header>
+
+    <main>
+      <nav class="list-switcher" aria-label="Liste auswählen">
+        <button id="sharedModeBtn" class="mode-btn active" type="button">👨‍👩‍👧‍👦 Gemeinsam</button>
+        <button id="weeklyModeBtn" class="mode-btn" type="button">🧾 Mein Wocheneinkauf</button>
+      </nav>
+
+      <section class="list-section list-card">
+        <div class="section-title-row sticky-title">
+          <div class="list-heading-row">
+            <h2 id="listTitle">🛒 Einkaufsliste</h2>
+            <span id="openCount" class="open-count-badge">0 offen</span>
+          </div>
+          <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
+        </div>
+<div class="list-toolbar">
+          <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
+          <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
+        </div>
+
+        <div id="shoppingList"></div>
+      </section>
+
+      <section class="add-card add-card-color">
+        <div class="section-title-row">
+          <h2 id="addSectionTitle">➕ Einkaufsliste ergänzen</h2>
+          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">🗂 Kategorien</button></div>
+        </div>
+
+        <div id="catalogMode">
+          <label for="productSearch">🔎 Suchen</label>
+          <div class="search-row">
+            <input id="productSearch" class="red-search" type="search" placeholder="Produkt suchen oder sprechen …" autocomplete="off" />
+            <button id="speechBtn" class="speech-btn" type="button" aria-label="Spracheingabe starten">🎤</button>
+          </div>
+          <div id="speechHint" class="small-muted">Mit 🎤 kannst du den Suchtext mündlich eingeben.</div>
+
+          <details id="browseDetails" class="browse-details">
+            <summary>🗂 Nach Kategorie stöbern</summary>
+            <div class="browse-controls">
+              <label for="categorySelect">Kategorie</label>
+              <select id="categorySelect"></select>
+              <label for="subgroupSelect">Untergruppe</label>
+              <select id="subgroupSelect"></select>
+            </div>
+          </details>
+
+          <div id="productGrid" class="product-grid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="profileDialog">
+    <form method="dialog" class="dialog-card">
+      <h2>Wer bist du?</h2>
+      <p>Die Auswahl wird auf diesem iPhone gespeichert.</p>
+      <div class="profile-grid" id="profileGrid"></div>
+      <button value="cancel" class="ghost-btn full">Schliessen</button>
+    </form>
+  </dialog>
+
+
+  <dialog id="catalogDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>Kategorien verwalten</h2>
+        <button id="closeCatalogDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+      <p>Eigene Kategorien und Untergruppen werden in der Cloud gespeichert und sind deshalb für Leon, Papi, Mami und Anouk sichtbar.</p>
+
+      <div class="manage-block">
+        <label for="newCategoryName">Neue Kategorie</label>
+        <input id="newCategoryName" type="text" placeholder="z. B. Garten" />
+        <button id="addCategoryBtn" class="primary-btn" type="button">Kategorie erstellen</button>
+      </div>
+
+      <div class="manage-block">
+        <label for="manageCategorySelect">Kategorie für neue Untergruppe</label>
+        <select id="manageCategorySelect"></select>
+        <div id="manageSubgroupHint" class="small-muted"></div>
+        <label for="newSubgroupName">Neue Untergruppe</label>
+        <input id="newSubgroupName" type="text" placeholder="z. B. Pflanzenpflege" />
+        <button id="addSubgroupBtn" class="primary-btn" type="button">Untergruppe erstellen</button>
+      </div>
+
+      <h3 class="mini-heading">Eigene Einträge</h3>
+      <div id="customGroupList"></div>
+    </div>
+  </dialog>
+
+
+  <dialog id="newProductDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>Produkt aufnehmen?</h2>
+        <button id="closeNewProductDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+
+      <p><strong id="newProductNameLabel"></strong> wurde nicht gefunden. Soll dieses Produkt in die gemeinsame Datenbank aufgenommen werden?</p>
+
+      <div class="selection-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <label for="newProductCategory">Kategorie auswählen</label>
+          <select id="newProductCategory"></select>
+
+          <div id="newCategoryInline" class="inline-create hidden">
+            <label for="newProductCategoryName">Neue Kategorie</label>
+            <input id="newProductCategoryName" type="text" placeholder="z. B. Tierbedarf" autocomplete="off" />
+            <div class="small-muted">Die neue Kategorie wird beim Speichern für alle erstellt.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newProductSubgroupStep" class="selection-step hidden">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <label for="newProductSubgroup">Untergruppe auswählen</label>
+          <select id="newProductSubgroup"></select>
+
+          <div id="newSubgroupInline" class="inline-create hidden">
+            <label for="newProductSubgroupName">Neue Untergruppe</label>
+            <input id="newProductSubgroupName" type="text" placeholder="z. B. Katzenfutter" autocomplete="off" />
+            <div class="small-muted">Die neue Untergruppe wird beim Speichern für alle erstellt.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newProductChoiceHint" class="small-muted choice-hint">Zuerst eine Kategorie auswählen.</div>
+
+      <button id="saveNewProductBtn" class="primary-btn" type="button" disabled>In Datenbank aufnehmen & auf Liste setzen</button>
+      <button id="cancelNewProductBtn" class="ghost-btn full dialog-secondary" type="button">Abbrechen</button>
+    </div>
+  </dialog>
+
+  <script>
+window.PRODUCT_CATALOG = {
+  "Lebensmittel": {
+    "Obst": ["Äpfel","Bananen","Birnen","Orangen","Mandarinen","Zitronen","Limetten","Trauben","Erdbeeren","Himbeeren","Heidelbeeren","Pfirsiche","Nektarinen","Aprikosen","Kiwis","Mango","Ananas","Melone","Wassermelone","Avocado"],
+    "Gemüse": ["Tomaten","Cherry-Tomaten","Gurken","Peperoni","Karotten","Kartoffeln","Süsskartoffeln","Zwiebeln","Knoblauch","Broccoli","Blumenkohl","Zucchetti","Aubergine","Lauch","Sellerie","Spinat","Salat","Rucola","Champignons","Mais"],
+    "Brot & Backwaren": ["Brot","Toastbrot","Zopf","Brötchen","Gipfeli","Tortillas","Knäckebrot","Reiswaffeln","Mehl","Backpulver","Hefe","Paniermehl"],
+    "Milchprodukte & Eier": ["Milch","Haferdrink","Mandelmilch","Butter","Margarine","Naturjoghurt","Fruchtjoghurt","Skyr","Quark","Rahm","Crème fraîche","Mozzarella","Parmesan","Gouda","Emmentaler","Frischkäse","Eier"],
+    "Fleisch & Fisch": ["Pouletbrust","Pouletschenkel","Rindshackfleisch","Rindssteak","Schweinefleisch","Kalbfleisch","Speck","Schinken","Salami","Bratwürste","Cervelat","Lachs","Thunfisch","Crevetten","Fischstäbchen"],
+    "Vegetarisch & Vegan": ["Tofu","Tempeh","Vegiburger","Falafel","Hummus","Veganes Hack","Vegane Nuggets","Kichererbsen","Linsen","Kidneybohnen","Weisse Bohnen"],
+    "Teigwaren, Reis & Beilagen": ["Spaghetti","Penne","Fusilli","Lasagneblätter","Ravioli","Tortellini","Reis","Risottoreis","Couscous","Bulgur","Quinoa","Polenta","Gnocchi"],
+    "Vorrat & Konserven": ["Tomatensauce","Pelati","Tomatenpüree","Kokosmilch","Bouillon","Maisdose","Thunfischdose","Apfelmus","Essiggurken","Oliven","Kapern","Pesto","Mayonnaise","Ketchup","Senf","Sojasauce","Balsamico","Essig","Olivenöl","Sonnenblumenöl"],
+    "Frühstück": ["Haferflocken","Müesli","Cornflakes","Granola","Konfitüre","Honig","Nutella","Erdnussbutter","Ahornsirup","Kakaopulver"],
+    "Snacks & Süsses": ["Chips","Popcorn","Nüsse","Mandeln","Cashews","Cracker","Schokolade","Gummibärchen","Kekse","Riegel","Glace","Pudding"],
+    "Tiefkühl": ["TK-Gemüse","TK-Beeren","Pommes frites","Pizza","Lasagne","Glace","Fischstäbchen","Chicken Nuggets","TK-Kräuter"],
+    "Gewürze & Backen": ["Salz","Pfeffer","Paprika","Curry","Chili","Oregano","Basilikum","Zimt","Vanillezucker","Zucker","Rohrzucker","Puderzucker","Maizena","Kakao","Schokoladenwürfel"]
+  },
+  "Getränke": {
+    "Wasser": ["Mineralwasser still","Mineralwasser mit Kohlensäure"],
+    "Softdrinks": ["Cola","Cola Zero","Citro","Eistee","Rivella","Orangina","Tonic Water","Ginger Ale"],
+    "Säfte": ["Orangensaft","Apfelsaft","Multivitaminsaft","Ananassaft"],
+    "Kaffee & Tee": ["Kaffeebohnen","Kaffeekapseln","Filterkaffee","Schwarztee","Grüntee","Pfefferminztee","Kamillentee"],
+    "Sonstiges": ["Sirup","Energy Drink","Isotonisches Getränk"]
+  },
+  "Hygiene": {
+    "Zahnpflege": ["Zahnpasta","Zahnbürsten","Zahnseide","Interdentalbürsten","Mundspülung"],
+    "Dusche & Haare": ["Duschgel","Shampoo","Conditioner","Trockenshampoo","Haargel","Haarspray","Rasiergel"],
+    "Körperpflege": ["Deodorant","Bodylotion","Handcreme","Gesichtscreme","Lippenpflege","Sonnencreme","Wattestäbchen","Wattepads"],
+    "Rasur": ["Rasierklingen","Einwegrasierer","Rasierschaum","Aftershave"],
+    "Papier & Monatshygiene": ["Toilettenpapier","Taschentücher","Feuchttücher","Tampons","Binden","Slipeinlagen"],
+    "Apotheke": ["Pflaster","Desinfektionsmittel","Verbandsmaterial","Fieberthermometer-Batterie"]
+  },
+  "Haushalt": {
+    "Reinigung Küche": ["Abwaschmittel","Spülmaschinen-Tabs","Klarspüler","Spülmaschinensalz","Küchenschwämme","Abwaschbürste","Küchenreiniger","Entkalker"],
+    "Reinigung Haus": ["Allzweckreiniger","Badreiniger","WC-Reiniger","Glasreiniger","Bodenreiniger","Scheuermittel","Mikrofasertücher","Putzschwämme","Gummihandschuhe"],
+    "Waschen": ["Waschmittel Color","Waschmittel Weiss","Feinwaschmittel","Weichspüler","Fleckentferner","Wäschenetz"],
+    "Papier & Abfall": ["Haushaltpapier","Backpapier","Alufolie","Frischhaltefolie","Gefrierbeutel","Kehrichtsäcke","Kompostsäcke","Zip-Beutel"],
+    "Küche": ["Kaffeefilter","Servietten","Streichhölzer","Feuerzeug","Kerzen","Zahnstocher"],
+    "Tierbedarf": ["Tierfutter","Katzenstreu","Hundebeutel"]
+  },
+  "Batterien & Elektro": {
+    "Batterien": ["AA-Batterien","AAA-Batterien","C-Batterien","D-Batterien","9V-Batterie","CR2032 Knopfzelle","CR2025 Knopfzelle","CR2016 Knopfzelle","LR44 Knopfzelle"],
+    "Licht": ["LED-Lampe E27","LED-Lampe E14","LED-Spot GU10","Nachtlicht"],
+    "Kabel & Zubehör": ["USB-C Kabel","Lightning-Kabel","USB-A Kabel","Mehrfachstecker","Verlängerungskabel","Klebeband","Isolierband"]
+  },
+  "Sonstiges": {
+    "Büro & Schule": ["Druckerpapier","Kugelschreiber","Bleistifte","Textmarker","Notizblock","Briefumschläge","Klebestift"],
+    "Freizeit": ["Grillkohle","Anzündwürfel","Picknickbecher","Pappteller","Servietten","Müllbeutel"],
+    "Auto": ["Scheibenreiniger","Enteiser","Motoröl","Papiertaschentücher Auto"]
+  }
+};
+
+
+const PEOPLE = ["Leon", "Papi", "Mami", "Anouk"];
+const config = Object.freeze({
+  SUPABASE_URL: "https://kfpxheegmeupnuzqjqqt.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_vlP2dIHDTK-VY5LK-jeS_w_tN04WaK0",
+  HOUSEHOLD_ID: "leon-papi-mami-anouk"
+});
+
+function validConfig(candidate) {
+  return Boolean(
+    candidate &&
+    typeof candidate.SUPABASE_URL === "string" &&
+    candidate.SUPABASE_URL.startsWith("https://") &&
+    typeof candidate.SUPABASE_ANON_KEY === "string" &&
+    candidate.SUPABASE_ANON_KEY.startsWith("sb_publishable_")
+  );
+}
+
+class RestQuery {
+  constructor(client, table) {
+    this.client = client;
+    this.table = table;
+    this.method = "GET";
+    this.body = null;
+    this.selectColumns = null;
+    this.filters = [];
+    this.orders = [];
+  }
+
+  select(columns = "*") {
+    this.method = "GET";
+    this.selectColumns = columns;
+    return this;
+  }
+
+  insert(payload) {
+    this.method = "POST";
+    this.body = payload;
+    return this;
+  }
+
+  update(payload) {
+    this.method = "PATCH";
+    this.body = payload;
+    return this;
+  }
+
+  delete() {
+    this.method = "DELETE";
+    return this;
+  }
+
+  eq(column, value) {
+    this.filters.push([column, value]);
+    return this;
+  }
+
+  order(column, options = {}) {
+    this.orders.push([column, options.ascending !== false ? "asc" : "desc"]);
+    return this;
+  }
+
+  then(resolve, reject) {
+    return this.execute().then(resolve, reject);
+  }
+
+  async execute() {
+    const url = new URL(`${this.client.url}/rest/v1/${encodeURIComponent(this.table)}`);
+
+    if (this.method === "GET") {
+      url.searchParams.set("select", this.selectColumns || "*");
+    }
+
+    for (const [column, value] of this.filters) {
+      let encoded;
+      if (value === null) encoded = "null";
+      else if (typeof value === "boolean") encoded = value ? "true" : "false";
+      else encoded = String(value);
+      url.searchParams.append(column, `eq.${encoded}`);
+    }
+
+    if (this.orders.length) {
+      url.searchParams.set(
+        "order",
+        this.orders.map(([column, direction]) => `${column}.${direction}`).join(",")
+      );
+    }
+
+    const headers = {
+      "apikey": this.client.key,
+      "Accept": "application/json"
+    };
+
+    const options = {
+      method: this.method,
+      headers,
+      cache: "no-store"
+    };
+
+    if (this.method !== "GET") {
+      headers["Content-Type"] = "application/json";
+      headers["Prefer"] = "return=minimal";
+      if (this.body !== null) options.body = JSON.stringify(this.body);
+    }
+
+    try {
+      const response = await fetch(url.toString(), options);
+      const text = await response.text();
+
+      let payload = null;
+      if (text) {
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = text;
+        }
+      }
+
+      if (!response.ok) {
+        const message =
+          (payload && typeof payload === "object" && (payload.message || payload.error_description || payload.error)) ||
+          (typeof payload === "string" && payload) ||
+          `HTTP ${response.status}`;
+
+        return {
+          data: null,
+          error: {
+            message: String(message),
+            status: response.status,
+            details: payload
+          }
+        };
+      }
+
+      return {
+        data: this.method === "GET" ? (payload || []) : payload,
+        error: null
+      };
+    } catch (err) {
+      return {
+        data: null,
+        error: {
+          message: err?.message || "Netzwerkfehler",
+          details: err
+        }
+      };
+    }
+  }
+}
+
+class RestClient {
+  constructor(url, key) {
+    this.url = String(url || "").replace(/\/+$/, "");
+    this.key = key;
+  }
+
+  from(table) {
+    return new RestQuery(this, table);
+  }
+}
+
+function createDatabaseClient(url, key) {
+  return new RestClient(url, key);
+}
+let db = null;
+let currentPerson = localStorage.getItem("family-shop-person") || "";
+let items = [];
+let weeklyItems = [];
+let activeListMode = localStorage.getItem("family-shop-list-mode") || "shared";
+let customGroups = [];
+let cloudProducts = [];
+let pendingNewProductName = "";
+let hidePurchased = false;
+let speechRecognition = null;
+let speechListening = false;
+
+const $ = (id) => document.getElementById(id);
+
+
+async function cleanupOldAppCaches() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (_) {}
+
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (_) {}
+}
+
+function configured() {
+  return validConfig(config);
+}
+
+
+function currentActiveItems() {
+  return activeListMode === "weekly" ? weeklyItems : items;
+}
+
+function updateListModeUI() {
+  const weekly = activeListMode === "weekly";
+  $("sharedModeBtn").classList.toggle("active", !weekly);
+  $("weeklyModeBtn").classList.toggle("active", weekly);
+  $("listTitle").textContent = weekly
+    ? `🧾 ${currentPerson || "Meine"} Einkaufsliste`
+    : "🛒 Einkaufsliste";
+  $("addSectionTitle").textContent = weekly
+    ? "➕ Persönliche Liste ergänzen"
+    : "➕ Einkaufsliste ergänzen";
+  localStorage.setItem("family-shop-list-mode", activeListMode);
+  hidePurchased = false;
+  renderList();
+}
+
+async function switchListMode(mode) {
+  activeListMode = mode;
+  if (mode === "weekly" && db) await loadWeeklyItems();
+  updateListModeUI();
+  $("productSearch").value = "";
+  renderProducts();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function initProfile() {
+  $("profileGrid").innerHTML = PEOPLE.map(p => `<button type="button" class="profile-choice" data-person="${p}">${p}</button>`).join("");
+  $("profileGrid").addEventListener("click", async e => {
+    const btn = e.target.closest("[data-person]");
+    if (!btn) return;
+    currentPerson = btn.dataset.person;
+    localStorage.setItem("family-shop-person", currentPerson);
+    $("profileBtn").textContent = currentPerson;
+    $("profileDialog").close();
+    toast(`Profil: ${currentPerson}`);
+    if (db) await loadWeeklyItems();
+    updateListModeUI();
+  });
+  $("profileBtn").textContent = currentPerson || "Profil wählen";
+  $("profileBtn").onclick = () => $("profileDialog").showModal();
+  if (!currentPerson) $("profileDialog").showModal();
+}
+
+function getAllCategories() {
+  const categories = new Set(Object.keys(PRODUCT_CATALOG));
+  for (const g of customGroups) if (g.category) categories.add(g.category);
+  for (const p of cloudProducts) if (p.category) categories.add(p.category);
+  return [...categories].sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function getSubgroups(category) {
+  const groups = new Set(Object.keys(PRODUCT_CATALOG[category] || {}));
+  for (const g of customGroups) {
+    if (g.category === category && g.subcategory) groups.add(g.subcategory);
+  }
+  for (const p of cloudProducts) {
+    if (p.category === category && p.subcategory) groups.add(p.subcategory);
+  }
+  return [...groups].sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function preserveSelectValue(select, options, fallback = "") {
+  const old = select.value;
+  select.innerHTML = options.join("");
+  if ([...select.options].some(o => o.value === old)) select.value = old;
+  else if (fallback && [...select.options].some(o => o.value === fallback)) select.value = fallback;
+}
+
+function buildCatalog() {
+  refreshCategorySelectors();
+  $("categorySelect").addEventListener("change", refreshSubgroups);
+  $("subgroupSelect").addEventListener("change", renderProducts);
+  $("productSearch").addEventListener("input", renderProducts);
+  $("browseDetails").addEventListener("toggle", renderProducts);
+
+  $("newProductCategory").addEventListener("change", handleNewProductCategoryChange);
+  $("newProductCategoryName").addEventListener("input", handleNewProductCategoryNameInput);
+  $("newProductSubgroup").addEventListener("change", handleNewProductSubgroupChange);
+  $("newProductSubgroupName").addEventListener("input", updateNewProductSaveState);
+
+  $("sharedModeBtn").addEventListener("click", () => switchListMode("shared"));
+  $("weeklyModeBtn").addEventListener("click", () => switchListMode("weekly"));
+  $("resetWeeklyBtn").addEventListener("click", resetWeeklyChecks);
+
+  refreshSubgroups();
+  setupSpeechSearch();
+  updateListModeUI();
+}
+
+function refreshCategorySelectors() {
+  const categories = getAllCategories();
+  const options = categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`);
+  preserveSelectValue($("categorySelect"), options);
+  preserveSelectValue($("manageCategorySelect"), options);
+  refreshManageSubgroupList();
+}
+
+function refreshSubgroups() {
+  const cat = $("categorySelect").value;
+  const groups = getSubgroups(cat);
+  const options = [`<option value="__all">Alle Untergruppen</option>`, ...groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)];
+  preserveSelectValue($("subgroupSelect"), options, "__all");
+  renderProducts();
+}
+
+
+
+function setSpeechState(listening, hint = "") {
+  speechListening = listening;
+  const btn = $("speechBtn");
+  if (!btn) return;
+  btn.classList.toggle("listening", listening);
+  btn.textContent = listening ? "⏹" : "🎤";
+  btn.setAttribute("aria-label", listening ? "Spracheingabe stoppen" : "Spracheingabe starten");
+  $("speechHint").textContent = hint || (listening ? "Ich höre zu … sprich jetzt den Suchbegriff." : "Tipp: Mit 🎤 kannst du den Suchtext mündlich eingeben.");
+}
+
+function setupSpeechSearch() {
+  const btn = $("speechBtn");
+  if (!btn) return;
+  const SpeechApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechApi) {
+    btn.disabled = true;
+    $("speechHint").textContent = "Spracheingabe wird auf diesem Gerät/Browser leider nicht unterstützt.";
+    return;
+  }
+
+  speechRecognition = new SpeechApi();
+  speechRecognition.lang = "de-CH";
+  speechRecognition.interimResults = false;
+  speechRecognition.maxAlternatives = 1;
+  speechRecognition.continuous = false;
+
+  speechRecognition.onstart = () => setSpeechState(true);
+  speechRecognition.onend = () => setSpeechState(false);
+  speechRecognition.onerror = () => {
+    setSpeechState(false, "Spracheingabe konnte nicht gestartet werden. Bitte nochmals versuchen.");
+  };
+  speechRecognition.onresult = (event) => {
+    const text = event.results?.[0]?.[0]?.transcript?.trim() || "";
+    if (text) {
+      $("productSearch").value = text;
+      renderProducts();
+      setSpeechState(false, `Gesucht nach: ${text}`);
+      toast(`Suche: ${text}`);
+    }
+  };
+
+  btn.onclick = () => {
+    try {
+      if (speechListening) speechRecognition.stop();
+      else speechRecognition.start();
+    } catch (err) {
+      setSpeechState(false, "Spracheingabe konnte nicht gestartet werden. Bitte nochmals versuchen.");
+    }
+  };
+}
+
+
+function allCatalogProducts() {
+  const all = [];
+
+  for (const [category, subgroups] of Object.entries(PRODUCT_CATALOG)) {
+    for (const [subgroup, arr] of Object.entries(subgroups)) {
+      for (const name of arr) all.push({ name, category, subgroup, source: "standard" });
+    }
+  }
+
+  for (const p of cloudProducts) {
+    all.push({
+      name: p.product_name,
+      category: p.category,
+      subgroup: p.subcategory,
+      source: "cloud"
+    });
+  }
+
+  // Doppelte Einträge zusammenfassen
+  const seen = new Set();
+  return all.filter(p => {
+    const key = `${p.name}|||${p.category}|||${p.subgroup}`.toLocaleLowerCase("de-CH");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function normalizeProductName(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase("de-CH");
+}
+
+function renderProducts() {
+  const selectedCategory = $("categorySelect").value;
+  const selectedSubgroup = $("subgroupSelect").value;
+  const rawQuery = $("productSearch").value.trim().replace(/\s+/g, " ");
+  const q = rawQuery.toLocaleLowerCase("de-CH");
+  const all = allCatalogProducts();
+  const browsing = Boolean($("browseDetails")?.open);
+  let products = [];
+
+  // 1) Suche: immer über den gesamten Katalog.
+  if (q) {
+    products = all.filter(p => {
+      const haystack = `${p.name} ${p.category} ${p.subgroup}`.toLocaleLowerCase("de-CH");
+      return haystack.includes(q);
+    });
+  }
+  // 2) Stöbern: Vorschläge erst anzeigen, wenn «Nach Kategorie stöbern»
+  //    vom User bewusst geöffnet wurde.
+  else if (browsing) {
+    products = all.filter(p => {
+      if (p.category !== selectedCategory) return false;
+      if (selectedSubgroup !== "__all" && p.subgroup !== selectedSubgroup) return false;
+      return true;
+    });
+  }
+  // 3) Weder Suche noch Stöbern: keine Vorschläge anzeigen.
+  else {
+    $("productGrid").innerHTML = "";
+    return;
+  }
+
+  products.sort((a, b) => a.name.localeCompare(b.name, "de"));
+
+  const exactExists = q && all.some(p => normalizeProductName(p.name) === normalizeProductName(rawQuery));
+
+  const productButtons = products.map(p =>
+    `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-category="${escapeAttr(p.category)}" data-subgroup="${escapeAttr(p.subgroup)}">
+      <span class="product-btn-name">➕ ${escapeHtml(p.name)}</span>
+      ${q ? `<span class="product-btn-meta">${escapeHtml(p.category)} · ${escapeHtml(p.subgroup)}</span>` : ""}
+    </button>`
+  ).join("");
+
+  const addNewOption = q && rawQuery.length >= 2 && !exactExists
+    ? `<div class="new-product-suggestion">
+        <div class="new-product-copy">
+          <strong>„${escapeHtml(rawQuery)}“ noch nicht vorhanden?</strong>
+          <span>Nicht gefunden? In die gemeinsame Datenbank aufnehmen und Kategorie sowie Untergruppe festlegen.</span>
+        </div>
+        <button class="primary-btn compact-btn" id="offerNewProductBtn" type="button">➕ In Datenbank aufnehmen</button>
+      </div>`
+    : "";
+
+  if (!products.length && !addNewOption) {
+    $("productGrid").innerHTML = q
+      ? `<div class="catalog-empty">Kein Produkt gefunden.</div>`
+      : `<div class="catalog-empty">In dieser Auswahl sind keine Produkte vorhanden.</div>`;
+  } else {
+    $("productGrid").innerHTML = productButtons + addNewOption;
+  }
+}
+
+$("productGrid").addEventListener("click", e => {
+  const addNewBtn = e.target.closest("#offerNewProductBtn");
+  if (addNewBtn) {
+    openNewProductDialog($("productSearch").value.trim());
+    return;
+  }
+
+  const b = e.target.closest(".product-btn");
+  if (!b) return;
+  addItem(b.dataset.name, b.dataset.category || $("categorySelect").value, b.dataset.subgroup);
+});
+
+
+
+function openNewProductDialog(name) {
+  if (!currentPerson) return $("profileDialog").showModal();
+  if (!db) return toast("Cloud-Verbindung noch nicht bereit");
+
+  const cleanName = String(name || "").trim().replace(/\s+/g, " ");
+  if (!cleanName) return;
+
+  pendingNewProductName = cleanName;
+  $("newProductNameLabel").textContent = cleanName;
+
+  // Schritt 1: Kategorie
+  const categories = getAllCategories();
+  $("newProductCategory").innerHTML = [
+    `<option value="">Kategorie auswählen …</option>`,
+    ...categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`),
+    `<option value="__new__">＋ Neue Kategorie erstellen</option>`
+  ].join("");
+
+  $("newProductCategory").value = "";
+  $("newProductCategoryName").value = "";
+  $("newCategoryInline").classList.add("hidden");
+
+  // Schritt 2 zunächst ausblenden
+  $("newProductSubgroupStep").classList.add("hidden");
+  $("newProductSubgroup").innerHTML = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+
+  $("newProductChoiceHint").textContent = "Zuerst eine Kategorie auswählen.";
+  $("saveNewProductBtn").disabled = true;
+
+  $("newProductDialog").showModal();
+}
+
+function selectedNewProductCategory() {
+  const selection = $("newProductCategory").value;
+  if (selection === "__new__") return $("newProductCategoryName").value.trim().replace(/\s+/g, " ");
+  return selection;
+}
+
+function selectedNewProductSubgroup() {
+  const selection = $("newProductSubgroup").value;
+  if (selection === "__new__") return $("newProductSubgroupName").value.trim().replace(/\s+/g, " ");
+  return selection;
+}
+
+function handleNewProductCategoryChange() {
+  const selection = $("newProductCategory").value;
+  const creating = selection === "__new__";
+
+  $("newCategoryInline").classList.toggle("hidden", !creating);
+
+  if (!selection) {
+    $("newProductSubgroupStep").classList.add("hidden");
+    $("newProductChoiceHint").textContent = "Zuerst eine Kategorie auswählen.";
+    updateNewProductSaveState();
+    return;
+  }
+
+  if (creating) {
+    $("newProductCategoryName").focus();
+    $("newProductSubgroupStep").classList.toggle("hidden", !$("newProductCategoryName").value.trim());
+  } else {
+    populateNewProductSubgroups(selection);
+    $("newProductSubgroupStep").classList.remove("hidden");
+  }
+
+  updateNewProductSaveState();
+}
+
+function handleNewProductCategoryNameInput() {
+  const category = $("newProductCategoryName").value.trim();
+
+  if (!category) {
+    $("newProductSubgroupStep").classList.add("hidden");
+    $("newProductChoiceHint").textContent = "Name der neuen Kategorie eingeben.";
+    updateNewProductSaveState();
+    return;
+  }
+
+  // Eine neue Kategorie hat noch keine Untergruppen:
+  // deshalb direkt die Möglichkeit zum Erstellen anbieten.
+  $("newProductSubgroup").innerHTML = [
+    `<option value="">Untergruppe auswählen …</option>`,
+    `<option value="__new__">＋ Neue Untergruppe erstellen</option>`
+  ].join("");
+  $("newProductSubgroup").value = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+  $("newProductSubgroupStep").classList.remove("hidden");
+  $("newProductChoiceHint").textContent = "Jetzt eine Untergruppe auswählen oder neu erstellen.";
+  updateNewProductSaveState();
+}
+
+function populateNewProductSubgroups(category) {
+  const groups = getSubgroups(category);
+  $("newProductSubgroup").innerHTML = [
+    `<option value="">Untergruppe auswählen …</option>`,
+    ...groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`),
+    `<option value="__new__">＋ Neue Untergruppe erstellen</option>`
+  ].join("");
+  $("newProductSubgroup").value = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+
+  $("newProductChoiceHint").textContent = groups.length
+    ? "Untergruppe auswählen. Falls nichts passt, direkt eine neue erstellen."
+    : "Noch keine Untergruppe vorhanden. Erstelle direkt eine neue.";
+}
+
+function handleNewProductSubgroupChange() {
+  const creating = $("newProductSubgroup").value === "__new__";
+  $("newSubgroupInline").classList.toggle("hidden", !creating);
+
+  if (creating) {
+    $("newProductSubgroupName").focus();
+    $("newProductChoiceHint").textContent = "Name der neuen Untergruppe eingeben.";
+  } else if ($("newProductSubgroup").value) {
+    $("newProductChoiceHint").textContent = "Kategorie und Untergruppe gewählt.";
+  }
+
+  updateNewProductSaveState();
+}
+
+function updateNewProductSaveState() {
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
+
+  const categoryValid = Boolean(category);
+  const subgroupValid = Boolean(subgroup);
+
+  $("saveNewProductBtn").disabled = !(categoryValid && subgroupValid);
+
+  if (categoryValid && subgroupValid) {
+    $("newProductChoiceHint").textContent = `Wird gespeichert unter: ${category} · ${subgroup}`;
+  }
+}
+
+$("closeNewProductDialog").onclick = () => $("newProductDialog").close();
+$("cancelNewProductBtn").onclick = () => $("newProductDialog").close();
+
+$("saveNewProductBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+
+  const name = pendingNewProductName;
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
+
+  if (!name) return;
+  if (!category) return toast("Bitte Kategorie auswählen oder erstellen");
+  if (!subgroup) return toast("Bitte Untergruppe auswählen oder erstellen");
+
+  $("saveNewProductBtn").disabled = true;
+
+  // Neue Kategorie/Untergruppe werden automatisch in der gemeinsamen Cloud angelegt.
+  const categoryOk = await ensureCatalogGroup(category, null);
+  if (!categoryOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  const subgroupOk = await ensureCatalogGroup(category, subgroup);
+  if (!subgroupOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  await loadCatalogGroups();
+
+  const productOk = await saveCatalogProduct(name, category, subgroup);
+  if (!productOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  $("newProductDialog").close();
+  $("productSearch").value = "";
+  await addItem(name, category, subgroup);
+  renderProducts();
+};
+
+
+async function saveCatalogProduct(name, category, subgroup) {
+  if (!db) return false;
+
+  // Auch die fest eingebauten Produkte gelten als bereits vorhanden.
+  const alreadyExists = allCatalogProducts().some(
+    p => normalizeProductName(p.name) === normalizeProductName(name)
+  );
+  if (alreadyExists) {
+    // Wenn derselbe Name bereits im Katalog vorhanden ist, nichts doppelt speichern.
+    return true;
+  }
+
+  const { error } = await db.from("catalog_products").insert({
+    product_name: String(name).trim().replace(/\s+/g, " "),
+    category,
+    subcategory: subgroup,
+    created_by: currentPerson || "Unbekannt"
+  });
+
+  if (error) {
+    const msg = String(error.message || "");
+    if (msg.includes("catalog_products") || msg.includes("relation")) {
+      toast("Produktdatenbank muss zuerst in Supabase aktiviert werden");
+    } else if (msg.includes("duplicate") || msg.includes("unique")) {
+      await loadCatalogProducts();
+      return true;
+    } else {
+      toast("Produkt konnte nicht gespeichert werden");
+    }
+    console.warn(error);
+    return false;
+  }
+
+  await loadCatalogProducts();
+  toast(`${name} in Datenbank aufgenommen`);
+  return true;
+}
+
+async function loadCatalogProducts() {
+  if (!db) return;
+  const { data, error } = await db
+    .from("catalog_products")
+    .select("*")
+    .order("product_name");
+
+  if (error) {
+    console.warn("catalog_products nicht verfügbar", error.message);
+    return;
+  }
+
+  cloudProducts = data || [];
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderProducts();
+}
+
+async function addItem(name, category, subgroup) {
+  if (!currentPerson) return $("profileDialog").showModal();
+  if (!db) return toast("Cloud-Verbindung noch nicht bereit");
+
+  if (activeListMode === "weekly") {
+    // Die persönliche Einkaufsliste ist eine dauerhafte Grundliste.
+    // Gleiche Produkte werden nicht doppelt angelegt.
+    const duplicate = weeklyItems.some(i =>
+      normalizeProductName(i.product_name) === normalizeProductName(name)
+    );
+    if (duplicate) return toast(`${name} ist bereits in deiner Grundliste`);
+
+    const { error } = await db.from("weekly_shopping_items").insert({
+      owner: currentPerson,
+      product_name: name,
+      category,
+      subcategory: subgroup,
+      purchased: false
+    });
+    if (error) {
+      console.warn(error);
+      return toast("Persönliche Liste konnte nicht ergänzt werden");
+    }
+    toast(`${name} zur persönlichen Liste hinzugefügt`);
+    return;
+  }
+
+  const { error } = await db.from("shopping_items").insert({
+    product_name: name,
+    category,
+    subcategory: subgroup,
+    added_by: currentPerson,
+    purchased: false
+  });
+  if (error) return toast("Fehler beim Hinzufügen");
+  toast(`${name} hinzugefügt`);
+}
+
+async function loadItems() {
+  if (!db) return;
+  $("syncState").textContent = "Synchronisiere …";
+  const { data, error } = await db.from("shopping_items")
+    .select("*")
+    .order("purchased", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (error) {
+    $("syncState").textContent = `Cloud-Fehler: ${error.status || ""} ${error.message || ""}`.trim();
+    console.warn("shopping_items:", error);
+    return;
+  }
+  items = data || [];
+  $("syncState").textContent = "Live synchronisiert";
+  renderList();
+}
+
+async function loadWeeklyItems() {
+  if (!db || !currentPerson) {
+    weeklyItems = [];
+    if (activeListMode === "weekly") renderList();
+    return;
+  }
+
+  if (activeListMode === "weekly") $("syncState").textContent = "Synchronisiere …";
+
+  const { data, error } = await db.from("weekly_shopping_items")
+    .select("*")
+    .eq("owner", currentPerson)
+    .order("purchased", { ascending: true })
+    .order("added_at", { ascending: false });
+
+  if (error) {
+    console.warn("weekly_shopping_items nicht verfügbar", error.message);
+    weeklyItems = [];
+    if (activeListMode === "weekly") {
+      $("syncState").textContent = "Persönliche Liste noch nicht eingerichtet";
+      renderList();
+    }
+    return;
+  }
+
+  weeklyItems = data || [];
+  if (activeListMode === "weekly") {
+    $("syncState").textContent = "Persönliche Liste synchronisiert";
+    renderList();
+  }
+}
+
+function renderList() {
+  const source = currentActiveItems();
+  const visible = hidePurchased ? source.filter(i => !i.purchased) : source;
+  const open = source.filter(i => !i.purchased).length;
+
+  $("openCount").textContent = `${open} offen`;
+  $("clearPurchasedBtn").textContent = hidePurchased ? "Gekaufte anzeigen" : "Gekaufte ausblenden";
+
+  if (!visible.length) {
+    const text = activeListMode === "weekly"
+      ? "🧾 Deine persönliche Grundliste ist noch leer."
+      : "🧺 Die Einkaufsliste ist leer.";
+    $("shoppingList").innerHTML = `<div class="empty">${text}</div>`;
+    return;
+  }
+
+  const sorted = [...visible].sort((a, b) => {
+    if (a.purchased !== b.purchased) return a.purchased ? 1 : -1;
+    const ad = a.created_at || a.added_at || 0;
+    const bd = b.created_at || b.added_at || 0;
+    return new Date(bd) - new Date(ad);
+  });
+
+  $("shoppingList").innerHTML = `<div class="flat-shopping-list">${sorted.map(renderItem).join("")}</div>`;
+}
+
+function renderItem(i) {
+  if (activeListMode === "weekly") {
+    return `<div class="item weekly-item ${i.purchased ? "done" : ""}" data-id="${i.id}">
+      <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
+      <div class="item-name weekly-item-name">${escapeHtml(i.product_name)}</div>
+      <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
+    </div>`;
+  }
+
+  const added = formatDate(i.added_at || i.created_at);
+  const bought = i.purchased_at ? formatDate(i.purchased_at) : "";
+  return `<div class="item ${i.purchased ? "done" : ""}" data-id="${i.id}">
+    <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
+    <div>
+      <div class="item-name">${escapeHtml(i.product_name)}</div>
+      <div class="meta">📝 Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>✅ Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
+    </div>
+    <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
+  </div>`;
+}
+
+$("shoppingList").addEventListener("change", async e => {
+  if (!e.target.classList.contains("check")) return;
+  if (!currentPerson) {
+    e.target.checked = !e.target.checked;
+    return $("profileDialog").showModal();
+  }
+
+  const id = e.target.closest(".item").dataset.id;
+  const purchased = e.target.checked;
+
+  if (activeListMode === "weekly") {
+    const payload = purchased
+      ? { purchased: true, purchased_at: new Date().toISOString() }
+      : { purchased: false, purchased_at: null };
+    const { error } = await db.from("weekly_shopping_items")
+      .update(payload)
+      .eq("id", id)
+      .eq("owner", currentPerson);
+    if (error) toast("Änderung konnte nicht gespeichert werden");
+    return;
+  }
+
+  const payload = purchased
+    ? { purchased: true, purchased_by: currentPerson, purchased_at: new Date().toISOString() }
+    : { purchased: false, purchased_by: null, purchased_at: null };
+  const { error } = await db.from("shopping_items").update(payload).eq("id", id);
+  if (error) toast("Änderung konnte nicht gespeichert werden");
+});
+
+$("shoppingList").addEventListener("click", async e => {
+  if (!e.target.classList.contains("delete-btn")) return;
+
+  const id = e.target.closest(".item").dataset.id;
+  const source = currentActiveItems();
+  const item = source.find(x => String(x.id) === String(id));
+  if (!confirm(`„${item?.product_name || "Produkt"}“ wirklich aus der Liste löschen?`)) return;
+
+  if (activeListMode === "weekly") {
+    const { error } = await db.from("weekly_shopping_items")
+      .delete()
+      .eq("id", id)
+      .eq("owner", currentPerson);
+    if (error) toast("Löschen fehlgeschlagen");
+    return;
+  }
+
+  const { error } = await db.from("shopping_items").delete().eq("id", id);
+  if (error) toast("Löschen fehlgeschlagen");
+});
+
+// --- Eigene Kategorien & Untergruppen ---
+$("manageCatalogBtn").onclick = () => {
+  refreshCategorySelectors();
+  renderCustomGroups();
+  $("catalogDialog").showModal();
+};
+$("closeCatalogDialog").onclick = () => $("catalogDialog").close();
+$("manageCategorySelect").addEventListener("change", refreshManageSubgroupList);
+
+$("addCategoryBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+  const category = $("newCategoryName").value.trim();
+  if (!category) return toast("Bitte Kategoriename eingeben");
+  await ensureCatalogGroup(category, null);
+  $("newCategoryName").value = "";
+};
+
+$("addSubgroupBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+  const category = $("manageCategorySelect").value;
+  const subgroup = $("newSubgroupName").value.trim();
+  if (!category) return toast("Bitte Kategorie wählen");
+  if (!subgroup) return toast("Bitte Untergruppe eingeben");
+  await ensureCatalogGroup(category, subgroup);
+  $("newSubgroupName").value = "";
+};
+
+async function ensureCatalogGroup(category, subcategory = null) {
+  if (!db || !category) return false;
+
+  const cleanCategory = category.trim().replace(/\s+/g, " ");
+  const normalizedSub = subcategory?.trim().replace(/\s+/g, " ") || null;
+
+  const exists = customGroups.some(
+    g => g.category.toLowerCase() === cleanCategory.toLowerCase() &&
+      (g.subcategory || "").toLowerCase() === (normalizedSub || "").toLowerCase()
+  );
+
+  const matchingStaticCategory = Object.keys(PRODUCT_CATALOG)
+    .find(c => c.toLowerCase() === cleanCategory.toLowerCase());
+
+  const staticCategoryExists = Boolean(matchingStaticCategory) && !normalizedSub;
+  const staticSubgroupExists = normalizedSub && matchingStaticCategory &&
+    Object.keys(PRODUCT_CATALOG[matchingStaticCategory] || {})
+      .some(g => g.toLowerCase() === normalizedSub.toLowerCase());
+
+  if (exists || staticCategoryExists || staticSubgroupExists) return true;
+
+  const { error } = await db.from("catalog_groups").insert({
+    category: cleanCategory,
+    subcategory: normalizedSub,
+    created_by: currentPerson || "Unbekannt"
+  });
+
+  if (error) {
+    const msg = String(error.message || "");
+    // Ein paralleles Gerät könnte denselben Eintrag gerade erstellt haben.
+    if (msg.includes("duplicate") || msg.includes("unique")) {
+      await loadCatalogGroups();
+      return true;
+    }
+    if (msg.includes("catalog_groups") || msg.includes("relation")) {
+      toast("Kategorien-Funktion muss zuerst in Supabase aktiviert werden");
+    } else {
+      toast("Kategorie oder Untergruppe konnte nicht gespeichert werden");
+    }
+    return false;
+  }
+
+  await loadCatalogGroups();
+  return true;
+}
+
+async function loadCatalogGroups() {
+  if (!db) return;
+  const { data, error } = await db.from("catalog_groups").select("*").order("category").order("subcategory");
+  if (error) {
+    console.warn("catalog_groups nicht verfügbar", error.message);
+    return;
+  }
+  customGroups = data || [];
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderCustomGroups();
+}
+
+function refreshManageSubgroupList() {
+  const category = $("manageCategorySelect").value;
+  const groups = getSubgroups(category);
+  $("manageSubgroupHint").textContent = groups.length ? `Vorhanden: ${groups.join(", ")}` : "Noch keine Untergruppen vorhanden.";
+}
+
+function renderCustomGroups() {
+  if (!$("customGroupList")) return;
+  if (!customGroups.length) {
+    $("customGroupList").innerHTML = `<div class="catalog-empty">Noch keine eigenen Kategorien oder Untergruppen erstellt.</div>`;
+    return;
+  }
+  const byCategory = {};
+  for (const g of customGroups) (byCategory[g.category] ||= []).push(g);
+  $("customGroupList").innerHTML = Object.entries(byCategory).map(([category, rows]) => {
+    const subgroups = rows.filter(r => r.subcategory).map(r => r.subcategory);
+    const creators = [...new Set(rows.map(r => r.created_by).filter(Boolean))].join(", ");
+    return `<div class="custom-group-row">
+      <div><strong>${escapeHtml(category)}</strong>${subgroups.length ? `<div class="small-muted">${subgroups.map(escapeHtml).join(" · ")}</div>` : `<div class="small-muted">Kategorie ohne Untergruppe</div>`}${creators ? `<div class="small-muted">Erstellt von ${escapeHtml(creators)}</div>` : ""}</div>
+    </div>`;
+  }).join("");
+}
+
+
+async function resetWeeklyChecks() {
+  if (!db || !currentPerson) return;
+  if (!weeklyItems.some(i => i.purchased)) {
+    return toast("Es gibt keine Häkchen zum Zurücksetzen");
+  }
+
+  if (!confirm("Alle Häkchen deiner persönlichen Einkaufsliste zurücksetzen? Die Produkte bleiben erhalten.")) return;
+
+  const { error } = await db.from("weekly_shopping_items")
+    .update({ purchased: false, purchased_at: null })
+    .eq("owner", currentPerson)
+    .eq("purchased", true);
+
+  if (error) {
+    console.warn(error);
+    return toast("Häkchen konnten nicht zurückgesetzt werden");
+  }
+
+  toast("Bereit für den nächsten Wocheneinkauf");
+  await loadWeeklyItems();
+}
+
+$("clearPurchasedBtn").onclick = () => { hidePurchased = !hidePurchased; renderList(); };
+$("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]); };
+
+
+function formatDate(iso) {
+  if (!iso) return "";
+  return new Intl.DateTimeFormat("de-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}
+function escapeHtml(s="") { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function escapeAttr(s="") { return escapeHtml(s); }
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1800);
+}
+
+async function start() {
+  await cleanupOldAppCaches();
+  initProfile();
+  buildCatalog();
+  db = createDatabaseClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+
+  await Promise.all([
+    loadItems(),
+    loadWeeklyItems(),
+    loadCatalogGroups(),
+    loadCatalogProducts()
+  ]);
+
+  window.setInterval(async () => {
+    if (document.hidden || !db) return;
+    await Promise.all([
+      loadItems(),
+      loadWeeklyItems(),
+      loadCatalogGroups(),
+      loadCatalogProducts()
+    ]);
+  }, 4000);
+
+  document.addEventListener("visibilitychange", async () => {
+    if (!document.hidden && db) {
+      await Promise.all([
+        loadItems(),
+        loadWeeklyItems(),
+        loadCatalogGroups(),
+        loadCatalogProducts()
+      ]);
+    }
+  });
+}
+start();
+
+  </script>
+
+</body>
+</html>
