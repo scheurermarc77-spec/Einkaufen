@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Familien Einkauf" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Familien Einkauf</title>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Gemeinsame Liste</div>
+        <h1>Familien Einkauf</h1>
+      </div>
+      <button id="profileBtn" class="profile-pill">Profil</button>
+    </header>
+
+    <main>
+      <section class="summary-card">
+        <div><strong id="openCount">0</strong><span>offen</span></div>
+        <div><strong id="doneCount">0</strong><span>gekauft</span></div>
+        <button id="clearPurchasedBtn" class="ghost-btn">Gekaufte ausblenden</button>
+      </section>
+
+      <section class="add-card">
+        <div class="section-title-row">
+          <h2>Produkt hinzufügen</h2>
+          <button id="customToggle" class="text-btn">Eigenes Produkt</button>
+        </div>
+
+        <div id="catalogMode">
+          <label for="categorySelect">Kategorie</label>
+          <select id="categorySelect"></select>
+          <label for="subgroupSelect">Untergruppe</label>
+          <select id="subgroupSelect"></select>
+          <label for="productSearch">Produkt</label>
+          <input id="productSearch" type="search" placeholder="Produkt suchen …" autocomplete="off" />
+          <div id="productGrid" class="product-grid"></div>
+        </div>
+
+        <div id="customMode" class="hidden">
+          <label for="customName">Produktname</label>
+          <input id="customName" type="text" placeholder="z. B. Spezialreiniger" />
+          <label for="customCategory">Kategorie</label>
+          <select id="customCategory"></select>
+          <label for="customSubgroup">Untergruppe</label>
+          <input id="customSubgroup" type="text" placeholder="z. B. Bad" />
+          <button id="addCustomBtn" class="primary-btn">Zur Liste hinzufügen</button>
+        </div>
+      </section>
+
+      <section class="list-section">
+        <div class="section-title-row sticky-title">
+          <h2>Einkaufsliste</h2>
+          <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
+        </div>
+        <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
+        <div id="shoppingList"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="profileDialog">
+    <form method="dialog" class="dialog-card">
+      <h2>Wer bist du?</h2>
+      <p>Die Auswahl wird auf diesem iPhone gespeichert.</p>
+      <div class="profile-grid" id="profileGrid"></div>
+      <button value="cancel" class="ghost-btn full">Schliessen</button>
+    </form>
+  </dialog>
+
+  <dialog id="setupDialog">
+    <div class="dialog-card">
+      <h2>Cloud-Verbindung fehlt</h2>
+      <p>Damit alle iPhones dieselbe Liste sehen, müssen in <code>config.js</code> einmalig die Supabase-Zugangsdaten eingetragen werden. Danach funktioniert die Synchronisierung automatisch.</p>
+      <button id="closeSetup" class="primary-btn full">Verstanden</button>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="products.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

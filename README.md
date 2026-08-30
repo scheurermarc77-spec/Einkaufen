@@ -1,0 +1,30 @@
+# Familien Einkauf – iPhone-App (PWA)
+
+Diese App ist für Leon, Papi, Mami und Anouk gedacht. Jede Person wählt auf ihrem eigenen iPhone einmal ihren Namen. Alle sehen anschliessend dieselbe Einkaufsliste live.
+
+## Enthalten
+- Gemeinsame, live synchronisierte Einkaufsliste
+- Profile: Leon, Papi, Mami, Anouk
+- Lebensmittel, Getränke, Hygiene, Haushalt, Batterien & Elektro, Sonstiges
+- Kategorien und Untergruppen
+- Viele vordefinierte Produkte + eigene Produkte
+- Anzeige „Eingetragen von …“ mit Datum/Uhrzeit
+- Beim Abhaken: „Gekauft von …“ mit Datum/Uhrzeit
+- Produkte können wieder auf „offen“ gesetzt oder gelöscht werden
+- Gekaufte Produkte können ausgeblendet werden
+- Auf iPhone zum Home-Bildschirm hinzufügbar
+
+## Einmalige Einrichtung der Cloud
+Die App nutzt Supabase als kostenlose Cloud-Datenbank.
+
+1. Auf supabase.com ein kostenloses Projekt erstellen.
+2. Im Supabase-Projekt den SQL Editor öffnen.
+3. Den ganzen Inhalt aus `supabase.sql` ausführen.
+4. In Supabase unter Project Settings / API die `Project URL` und den `anon public key` kopieren.
+5. In `config.js` diese beiden Werte einsetzen.
+6. Den gesamten Ordner auf einen HTTPS-Webhost laden (z.B. Netlify, Vercel, GitHub Pages oder eigener Webserver).
+7. Auf jedem iPhone die URL in Safari öffnen → Teilen → „Zum Home-Bildschirm“.
+8. Beim ersten Start Leon, Papi, Mami oder Anouk wählen.
+
+## Hinweis zur Sicherheit
+Diese Familienversion verwendet einen gemeinsamen Haushaltscode und keine Passwörter. Wer die App-URL und den Code kennt, könnte theoretisch auf die Liste zugreifen. Für eine private Familienliste ist das unkompliziert; für stärkeren Schutz kann später ein Login pro Person ergänzt werden.
