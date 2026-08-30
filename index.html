@@ -30,9 +30,18 @@
         <button id="clearPurchasedBtn" class="ghost-btn">Gekaufte ausblenden</button>
       </section>
 
+      <section class="list-section">
+        <div class="section-title-row sticky-title">
+          <h2>Einkaufsliste</h2>
+          <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
+        </div>
+        <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
+        <div id="shoppingList"></div>
+      </section>
+
       <section class="add-card">
         <div class="section-title-row">
-          <h2>Produkt hinzufügen</h2>
+          <h2>Liste ergänzen</h2>
           <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">Kategorien</button><button id="customToggle" class="text-btn">Eigenes Produkt</button></div>
         </div>
 
@@ -56,15 +65,6 @@
           <datalist id="customSubgroupList"></datalist>
           <button id="addCustomBtn" class="primary-btn">Zur Liste hinzufügen</button>
         </div>
-      </section>
-
-      <section class="list-section">
-        <div class="section-title-row sticky-title">
-          <h2>Einkaufsliste</h2>
-          <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
-        </div>
-        <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
-        <div id="shoppingList"></div>
       </section>
     </main>
   </div>

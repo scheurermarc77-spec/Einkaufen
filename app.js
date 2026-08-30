@@ -84,24 +84,40 @@ function refreshCustomSubgroups() {
 }
 
 function renderProducts() {
-  const cat = $("categorySelect").value;
-  const subgroup = $("subgroupSelect").value;
-  const q = $("productSearch").value.trim().toLowerCase();
+  const selectedCategory = $("categorySelect").value;
+  const selectedSubgroup = $("subgroupSelect").value;
+  const q = $("productSearch").value.trim().toLocaleLowerCase("de-CH");
   let products = [];
-  for (const [sg, arr] of Object.entries(PRODUCT_CATALOG[cat] || {})) {
-    if (subgroup !== "__all" && subgroup !== sg) continue;
-    for (const name of arr) products.push({name, subgroup: sg});
+
+  // Sobald gesucht wird, immer den gesamten Katalog durchsuchen –
+  // unabhängig von der aktuell gewählten Kategorie oder Untergruppe.
+  if (q) {
+    for (const [category, subgroups] of Object.entries(PRODUCT_CATALOG)) {
+      for (const [subgroup, arr] of Object.entries(subgroups)) {
+        for (const name of arr) {
+          const haystack = `${name} ${category} ${subgroup}`.toLocaleLowerCase("de-CH");
+          if (haystack.includes(q)) products.push({ name, category, subgroup });
+        }
+      }
+    }
+  } else {
+    for (const [subgroup, arr] of Object.entries(PRODUCT_CATALOG[selectedCategory] || {})) {
+      if (selectedSubgroup !== "__all" && selectedSubgroup !== subgroup) continue;
+      for (const name of arr) products.push({ name, category: selectedCategory, subgroup });
+    }
   }
-  if (q) products = products.filter(p => p.name.toLowerCase().includes(q));
+
+  products.sort((a, b) => a.name.localeCompare(b.name, "de"));
+
   $("productGrid").innerHTML = products.length
-    ? products.map(p => `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-subgroup="${escapeAttr(p.subgroup)}">${escapeHtml(p.name)}</button>`).join("")
-    : `<div class="catalog-empty">Keine vordefinierten Produkte in dieser Auswahl. Über „Eigenes Produkt“ kannst du eines hinzufügen.</div>`;
+    ? products.map(p => `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-category="${escapeAttr(p.category)}" data-subgroup="${escapeAttr(p.subgroup)}"><span class="product-btn-name">${escapeHtml(p.name)}</span>${q ? `<span class="product-btn-meta">${escapeHtml(p.category)} · ${escapeHtml(p.subgroup)}</span>` : ""}</button>`).join("")
+    : `<div class="catalog-empty">Kein Produkt gefunden. Die Suche berücksichtigt alle Kategorien und Untergruppen. Über „Eigenes Produkt“ kannst du einen neuen Artikel hinzufügen.</div>`;
 }
 
 $("productGrid").addEventListener("click", e => {
   const b = e.target.closest(".product-btn");
   if (!b) return;
-  addItem(b.dataset.name, $("categorySelect").value, b.dataset.subgroup);
+  addItem(b.dataset.name, b.dataset.category || $("categorySelect").value, b.dataset.subgroup);
 });
 
 $("customToggle").onclick = () => {
