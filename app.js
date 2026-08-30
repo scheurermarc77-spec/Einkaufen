@@ -3,6 +3,8 @@ const config = window.APP_CONFIG;
 let db = null;
 let currentPerson = localStorage.getItem("family-shop-person") || "";
 let items = [];
+let weeklyItems = [];
+let activeListMode = localStorage.getItem("family-shop-list-mode") || "shared";
 let customGroups = [];
 let cloudProducts = [];
 let pendingNewProductName = "";
@@ -16,9 +18,66 @@ function configured() {
   return config.SUPABASE_URL.startsWith("http") && !config.SUPABASE_ANON_KEY.startsWith("HIER_");
 }
 
+function getWeekStartDate(date = new Date()) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function dateToYmd(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function currentWeekStartYmd() {
+  return dateToYmd(getWeekStartDate());
+}
+
+function currentWeekLabel() {
+  const start = getWeekStartDate();
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  const fmt = new Intl.DateTimeFormat("de-CH", { day: "2-digit", month: "2-digit" });
+  return `${fmt.format(start)} – ${fmt.format(end)}`;
+}
+
+function currentActiveItems() {
+  return activeListMode === "weekly" ? weeklyItems : items;
+}
+
+function updateListModeUI() {
+  const weekly = activeListMode === "weekly";
+  $("sharedModeBtn").classList.toggle("active", !weekly);
+  $("weeklyModeBtn").classList.toggle("active", weekly);
+  $("listTitle").textContent = weekly
+    ? `📅 ${currentPerson || "Meine"} Wochenliste`
+    : "🛒 Einkaufsliste";
+  $("addSectionTitle").textContent = weekly
+    ? "➕ Wochenliste ergänzen"
+    : "➕ Einkaufsliste ergänzen";
+  $("weeklyPeriod").classList.toggle("hidden", !weekly);
+  $("weeklyPeriod").textContent = weekly ? `Kalenderwoche · ${currentWeekLabel()}` : "";
+  localStorage.setItem("family-shop-list-mode", activeListMode);
+  hidePurchased = false;
+  renderList();
+}
+
+async function switchListMode(mode) {
+  activeListMode = mode;
+  if (mode === "weekly" && db) await loadWeeklyItems();
+  updateListModeUI();
+  $("productSearch").value = "";
+  renderProducts();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function initProfile() {
   $("profileGrid").innerHTML = PEOPLE.map(p => `<button type="button" class="profile-choice" data-person="${p}">${p}</button>`).join("");
-  $("profileGrid").addEventListener("click", e => {
+  $("profileGrid").addEventListener("click", async e => {
     const btn = e.target.closest("[data-person]");
     if (!btn) return;
     currentPerson = btn.dataset.person;
@@ -26,6 +85,8 @@ function initProfile() {
     $("profileBtn").textContent = currentPerson;
     $("profileDialog").close();
     toast(`Profil: ${currentPerson}`);
+    if (db) await loadWeeklyItems();
+    updateListModeUI();
   });
   $("profileBtn").textContent = currentPerson || "Profil wählen";
   $("profileBtn").onclick = () => $("profileDialog").showModal();
@@ -69,8 +130,12 @@ function buildCatalog() {
   $("newProductSubgroup").addEventListener("change", handleNewProductSubgroupChange);
   $("newProductSubgroupName").addEventListener("input", updateNewProductSaveState);
 
+  $("sharedModeBtn").addEventListener("click", () => switchListMode("shared"));
+  $("weeklyModeBtn").addEventListener("click", () => switchListMode("weekly"));
+
   refreshSubgroups();
   setupSpeechSearch();
+  updateListModeUI();
 }
 
 function refreshCategorySelectors() {
@@ -492,6 +557,24 @@ async function loadCatalogProducts() {
 async function addItem(name, category, subgroup) {
   if (!currentPerson) return $("profileDialog").showModal();
   if (!db) return $("setupDialog").showModal();
+
+  if (activeListMode === "weekly") {
+    const { error } = await db.from("weekly_shopping_items").insert({
+      owner: currentPerson,
+      week_start: currentWeekStartYmd(),
+      product_name: name,
+      category,
+      subcategory: subgroup,
+      purchased: false
+    });
+    if (error) {
+      console.warn(error);
+      return toast("Wochenliste konnte nicht ergänzt werden");
+    }
+    toast(`${name} zur Wochenliste hinzugefügt`);
+    return;
+  }
+
   const { error } = await db.from("shopping_items").insert({
     product_name: name,
     category,
@@ -519,29 +602,74 @@ async function loadItems() {
   renderList();
 }
 
+async function loadWeeklyItems() {
+  if (!db || !currentPerson) {
+    weeklyItems = [];
+    if (activeListMode === "weekly") renderList();
+    return;
+  }
+
+  if (activeListMode === "weekly") $("syncState").textContent = "Synchronisiere …";
+
+  const { data, error } = await db.from("weekly_shopping_items")
+    .select("*")
+    .eq("owner", currentPerson)
+    .eq("week_start", currentWeekStartYmd())
+    .order("purchased", { ascending: true })
+    .order("added_at", { ascending: false });
+
+  if (error) {
+    console.warn("weekly_shopping_items nicht verfügbar", error.message);
+    weeklyItems = [];
+    if (activeListMode === "weekly") {
+      $("syncState").textContent = "Wochenlisten-Funktion noch nicht eingerichtet";
+      renderList();
+    }
+    return;
+  }
+
+  weeklyItems = data || [];
+  if (activeListMode === "weekly") {
+    $("syncState").textContent = "Persönlich synchronisiert";
+    renderList();
+  }
+}
+
 function renderList() {
-  const visible = hidePurchased ? items.filter(i => !i.purchased) : items;
-  const open = items.filter(i => !i.purchased).length;
+  const source = currentActiveItems();
+  const visible = hidePurchased ? source.filter(i => !i.purchased) : source;
+  const open = source.filter(i => !i.purchased).length;
 
   $("openCount").textContent = `${open} offen`;
   $("clearPurchasedBtn").textContent = hidePurchased ? "Gekaufte anzeigen" : "Gekaufte ausblenden";
 
   if (!visible.length) {
-    $("shoppingList").innerHTML = `<div class="empty">🧺 Die Einkaufsliste ist leer. Ergänze unten neue Produkte.</div>`;
+    const text = activeListMode === "weekly"
+      ? "📅 Deine Wochenliste für diese Woche ist leer."
+      : "🧺 Die Einkaufsliste ist leer.";
+    $("shoppingList").innerHTML = `<div class="empty">${text}</div>`;
     return;
   }
 
-  // Bewusst flache Liste: Kategorie und Untergruppe gehören nicht in die
-  // eigentliche Einkaufsliste. Offene Artikel stehen zuerst.
   const sorted = [...visible].sort((a, b) => {
     if (a.purchased !== b.purchased) return a.purchased ? 1 : -1;
-    return new Date(b.created_at || b.added_at || 0) - new Date(a.created_at || a.added_at || 0);
+    const ad = a.created_at || a.added_at || 0;
+    const bd = b.created_at || b.added_at || 0;
+    return new Date(bd) - new Date(ad);
   });
 
   $("shoppingList").innerHTML = `<div class="flat-shopping-list">${sorted.map(renderItem).join("")}</div>`;
 }
 
 function renderItem(i) {
+  if (activeListMode === "weekly") {
+    return `<div class="item weekly-item ${i.purchased ? "done" : ""}" data-id="${i.id}">
+      <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
+      <div class="item-name weekly-item-name">${escapeHtml(i.product_name)}</div>
+      <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
+    </div>`;
+  }
+
   const added = formatDate(i.added_at || i.created_at);
   const bought = i.purchased_at ? formatDate(i.purchased_at) : "";
   return `<div class="item ${i.purchased ? "done" : ""}" data-id="${i.id}">
@@ -556,9 +684,26 @@ function renderItem(i) {
 
 $("shoppingList").addEventListener("change", async e => {
   if (!e.target.classList.contains("check")) return;
-  if (!currentPerson) { e.target.checked = !e.target.checked; return $("profileDialog").showModal(); }
+  if (!currentPerson) {
+    e.target.checked = !e.target.checked;
+    return $("profileDialog").showModal();
+  }
+
   const id = e.target.closest(".item").dataset.id;
   const purchased = e.target.checked;
+
+  if (activeListMode === "weekly") {
+    const payload = purchased
+      ? { purchased: true, purchased_at: new Date().toISOString() }
+      : { purchased: false, purchased_at: null };
+    const { error } = await db.from("weekly_shopping_items")
+      .update(payload)
+      .eq("id", id)
+      .eq("owner", currentPerson);
+    if (error) toast("Änderung konnte nicht gespeichert werden");
+    return;
+  }
+
   const payload = purchased
     ? { purchased: true, purchased_by: currentPerson, purchased_at: new Date().toISOString() }
     : { purchased: false, purchased_by: null, purchased_at: null };
@@ -568,9 +713,21 @@ $("shoppingList").addEventListener("change", async e => {
 
 $("shoppingList").addEventListener("click", async e => {
   if (!e.target.classList.contains("delete-btn")) return;
+
   const id = e.target.closest(".item").dataset.id;
-  const item = items.find(x => String(x.id) === String(id));
+  const source = currentActiveItems();
+  const item = source.find(x => String(x.id) === String(id));
   if (!confirm(`„${item?.product_name || "Produkt"}“ wirklich aus der Liste löschen?`)) return;
+
+  if (activeListMode === "weekly") {
+    const { error } = await db.from("weekly_shopping_items")
+      .delete()
+      .eq("id", id)
+      .eq("owner", currentPerson);
+    if (error) toast("Löschen fehlgeschlagen");
+    return;
+  }
+
   const { error } = await db.from("shopping_items").delete().eq("id", id);
   if (error) toast("Löschen fehlgeschlagen");
 });
@@ -685,7 +842,7 @@ function renderCustomGroups() {
 }
 
 $("clearPurchasedBtn").onclick = () => { hidePurchased = !hidePurchased; renderList(); };
-$("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadCatalogGroups(), loadCatalogProducts()]); };
+$("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]); };
 $("closeSetup").onclick = () => $("setupDialog").close();
 
 function formatDate(iso) {
@@ -707,13 +864,14 @@ async function start() {
     $("setupDialog").showModal();
   } else {
     db = window.supabase.createClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
-    await Promise.all([loadItems(), loadCatalogGroups(), loadCatalogProducts()]);
+    await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]);
     db.channel("family-shopping-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "shopping_items" }, loadItems)
+      .on("postgres_changes", { event: "*", schema: "public", table: "weekly_shopping_items" }, loadWeeklyItems)
       .on("postgres_changes", { event: "*", schema: "public", table: "catalog_groups" }, loadCatalogGroups)
       .on("postgres_changes", { event: "*", schema: "public", table: "catalog_products" }, loadCatalogProducts)
       .subscribe(status => {
-        if (status === "SUBSCRIBED") $("syncState").textContent = "Live synchronisiert";
+        if (status === "SUBSCRIBED") $("syncState").textContent = activeListMode === "weekly" ? "Persönlich synchronisiert" : "Live synchronisiert";
       });
   }
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});

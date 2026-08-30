@@ -377,3 +377,68 @@ main {
 .add-card-color {
   margin-top: 16px;
 }
+
+
+/* v11 – gemeinsame Liste + persönliche Wochenliste */
+.section-hint {
+  display: none !important;
+}
+.list-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+  padding: 4px;
+  border-radius: 15px;
+  background: #e9ecea;
+}
+.mode-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 8px;
+  background: transparent;
+  color: #5a625d;
+  font-size: 13px;
+  font-weight: 750;
+}
+.mode-btn.active {
+  background: #fff;
+  color: #183a2e;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+#weeklyModeBtn.active {
+  color: #315f9b;
+  background: #f2f7ff;
+}
+.weekly-period {
+  margin: -2px 0 10px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  background: #eef4ff;
+  color: #315f9b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.red-search {
+  border: 2px solid #d84a4a !important;
+}
+.red-search:focus {
+  border-color: #bd3030 !important;
+  box-shadow: 0 0 0 3px rgba(216,74,74,.13) !important;
+}
+.weekly-item {
+  border-left: 4px solid #4979b8 !important;
+  background: #fbfdff;
+}
+.weekly-item.done {
+  border-left-color: #aebed3 !important;
+}
+.weekly-item-name {
+  margin: 0;
+}
+@media (max-width: 430px) {
+  .mode-btn {
+    font-size: 12px;
+    padding: 10px 5px;
+  }
+}

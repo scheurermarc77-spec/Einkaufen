@@ -24,40 +24,43 @@
     </header>
 
     <main>
+      <nav class="list-switcher" aria-label="Liste auswählen">
+        <button id="sharedModeBtn" class="mode-btn active" type="button">👨‍👩‍👧‍👦 Gemeinsam</button>
+        <button id="weeklyModeBtn" class="mode-btn" type="button">📅 Meine Wochenliste</button>
+      </nav>
+
       <section class="list-section list-card">
         <div class="section-title-row sticky-title">
-          <div>
-            <div class="list-heading-row">
-              <h2>🛒 Einkaufsliste</h2>
-              <span id="openCount" class="open-count-badge">0 offen</span>
-            </div>
-            <div class="section-hint">Produkt abhaken, sobald es gekauft wurde.</div>
+          <div class="list-heading-row">
+            <h2 id="listTitle">🛒 Einkaufsliste</h2>
+            <span id="openCount" class="open-count-badge">0 offen</span>
           </div>
           <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
         </div>
+
+        <div id="weeklyPeriod" class="weekly-period hidden"></div>
+
         <div class="list-toolbar">
           <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
           <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
         </div>
+
         <div id="shoppingList"></div>
       </section>
 
       <section class="add-card add-card-color">
         <div class="section-title-row">
-          <div>
-            <h2>➕ Einkaufsliste ergänzen</h2>
-            <div class="section-hint">Hier suchst du Produkte und fügst sie zur Liste hinzu.</div>
-          </div>
+          <h2 id="addSectionTitle">➕ Einkaufsliste ergänzen</h2>
           <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">🗂 Kategorien</button></div>
         </div>
 
         <div id="catalogMode">
           <label for="productSearch">🔎 Suchen</label>
           <div class="search-row">
-            <input id="productSearch" type="search" placeholder="Produkt suchen oder sprechen …" autocomplete="off" />
+            <input id="productSearch" class="red-search" type="search" placeholder="Produkt suchen oder sprechen …" autocomplete="off" />
             <button id="speechBtn" class="speech-btn" type="button" aria-label="Spracheingabe starten">🎤</button>
           </div>
-          <div id="speechHint" class="small-muted">Tipp: Mit 🎤 kannst du den Suchtext mündlich eingeben.</div>
+          <div id="speechHint" class="small-muted">Mit 🎤 kannst du den Suchtext mündlich eingeben.</div>
 
           <details id="browseDetails" class="browse-details">
             <summary>🗂 Nach Kategorie stöbern</summary>

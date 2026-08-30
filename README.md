@@ -74,3 +74,16 @@ Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor 
 - Kategorie- und Untergruppen-Vorschläge erscheinen erst, wenn «Nach Kategorie stöbern» geöffnet wird.
 - Solange weder gesucht noch gestöbert wird, bleibt der Vorschlagsbereich leer.
 - Die normale Suche durchsucht weiterhin unabhängig davon den gesamten Produktkatalog.
+
+
+## Version 11 – persönliche Wochenlisten
+
+- Erklärungstexte direkt unter «Einkaufsliste» und «Einkaufsliste ergänzen» wurden entfernt.
+- Das Suchfeld hat einen roten Rahmen.
+- Über «Gemeinsam» und «Meine Wochenliste» wird zwischen zwei vollständig getrennten Listen gewechselt.
+- Für jedes Profil wird automatisch pro Kalenderwoche eine eigene Wochenliste geführt.
+- Abhaken, Löschen oder Ergänzen in der Wochenliste verändert die gemeinsame Einkaufsliste nicht.
+- Die Wochenliste verwendet denselben Produktkatalog, dieselbe Suche und die Spracheingabe.
+- Einmalig muss `weekly_shopping_items.sql` im Supabase SQL Editor ausgeführt werden.
+
+Hinweis: Die vier Personen sind weiterhin App-Profile und keine passwortgeschützten Benutzerkonten. Die App zeigt jeweils nur die Wochenliste des aktuell gewählten Profils an.
