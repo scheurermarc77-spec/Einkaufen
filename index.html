@@ -24,21 +24,21 @@
     </header>
 
     <main>
-      <section class="summary-card">
-        <div class="stat-chip stat-open"><span class="stat-icon">🛒</span><div><strong id="openCount">0</strong><span>Noch kaufen</span></div></div>
-        <div class="stat-chip stat-done"><span class="stat-icon">✅</span><div><strong id="doneCount">0</strong><span>Schon gekauft</span></div></div>
-        <button id="clearPurchasedBtn" class="ghost-btn">✅ Gekaufte ausblenden</button>
-      </section>
-
       <section class="list-section list-card">
         <div class="section-title-row sticky-title">
           <div>
-            <h2>🛒 Einkaufsliste</h2>
-            <div class="section-hint">Hier siehst du die aktuelle gemeinsame Liste. Antippen = gekauft.</div>
+            <div class="list-heading-row">
+              <h2>🛒 Einkaufsliste</h2>
+              <span id="openCount" class="open-count-badge">0 offen</span>
+            </div>
+            <div class="section-hint">Produkt abhaken, sobald es gekauft wurde.</div>
           </div>
           <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
         </div>
-        <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
+        <div class="list-toolbar">
+          <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
+          <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
+        </div>
         <div id="shoppingList"></div>
       </section>
 

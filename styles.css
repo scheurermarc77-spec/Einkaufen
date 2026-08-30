@@ -308,3 +308,72 @@ button:disabled, select:disabled {
   .product-grid { grid-template-columns: 1fr; }
   .summary-card { grid-template-columns: 1fr; }
 }
+
+
+/* v9 – Einkaufsliste steht im Fokus */
+main {
+  padding-top: 10px;
+}
+.list-section {
+  margin-top: 0;
+}
+.list-card {
+  background: #ffffff;
+  border: 1px solid #dfe7e2;
+  box-shadow: 0 5px 16px rgba(25,53,39,.045);
+}
+.list-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.open-count-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef3f0;
+  color: #516158;
+  font-size: 11px;
+  font-weight: 700;
+}
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 2px 0 12px;
+}
+.list-toolbar .sync-state {
+  margin: 0;
+}
+.small-action-btn {
+  border: 0;
+  border-radius: 10px;
+  background: #f2f3f2;
+  color: #5e625f;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.flat-shopping-list {
+  display: grid;
+  gap: 8px;
+}
+.flat-shopping-list .item {
+  margin-bottom: 0;
+  border-color: #e4e8e5;
+  box-shadow: none;
+}
+.flat-shopping-list .item:not(.done) {
+  border-left: 4px solid #4b8768;
+}
+.flat-shopping-list .item.done {
+  border-left: 4px solid #b8c8be;
+}
+.add-card-color {
+  margin-top: 16px;
+}

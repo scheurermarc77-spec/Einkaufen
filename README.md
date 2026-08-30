@@ -58,3 +58,12 @@ Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor 
 - Mehr Farben, Symbole und erklärende Hinweise machen die App selbsterklärender.
 - In der Suche kann der Text mit dem Mikrofon-Button mündlich eingegeben werden (falls der Browser Spracheingabe unterstützt).
 - Suchresultate, Gruppen und Statusanzeigen wurden optisch klarer gestaltet.
+
+
+## Version 9 – Einkaufsliste im Fokus
+
+- Die eigentliche Einkaufsliste steht direkt ganz oben.
+- Die grosse Statistik für «Noch kaufen» und «Schon gekauft» wurde entfernt.
+- Es gibt nur noch eine kleine Anzeige mit der Anzahl offener Artikel.
+- In der Einkaufsliste werden keine Kategorien oder Untergruppen mehr angezeigt.
+- Die Liste ist bewusst flach und einfach gehalten; offene Artikel stehen zuerst.

@@ -142,9 +142,6 @@ function setupSpeechSearch() {
   };
 }
 
-function colorIndexForKey(value = "") {
-  return [...String(value)].reduce((n, ch) => n + ch.charCodeAt(0), 0) % 6;
-}
 
 function allCatalogProducts() {
   const all = [];
@@ -512,25 +509,24 @@ async function loadItems() {
 
 function renderList() {
   const visible = hidePurchased ? items.filter(i => !i.purchased) : items;
-  $("openCount").textContent = items.filter(i => !i.purchased).length;
-  $("doneCount").textContent = items.filter(i => i.purchased).length;
-  $("clearPurchasedBtn").textContent = hidePurchased ? "✅ Gekaufte anzeigen" : "✅ Gekaufte ausblenden";
+  const open = items.filter(i => !i.purchased).length;
+
+  $("openCount").textContent = `${open} offen`;
+  $("clearPurchasedBtn").textContent = hidePurchased ? "Gekaufte anzeigen" : "Gekaufte ausblenden";
+
   if (!visible.length) {
     $("shoppingList").innerHTML = `<div class="empty">🧺 Die Einkaufsliste ist leer. Ergänze unten neue Produkte.</div>`;
     return;
   }
-  const groups = {};
-  for (const item of visible) {
-    const key = `${item.category}|||${item.subcategory}`;
-    (groups[key] ||= []).push(item);
-  }
-  $("shoppingList").innerHTML = Object.entries(groups).map(([key, arr]) => {
-    const [cat, sub] = key.split("|||");
-    return `<div class="group group-color-${colorIndexForKey(key)}">
-      <div class="group-title"><span>📂 ${escapeHtml(cat)} · ${escapeHtml(sub)}</span><span class="group-count">${arr.length}</span></div>
-      ${arr.map(renderItem).join("")}
-    </div>`;
-  }).join("");
+
+  // Bewusst flache Liste: Kategorie und Untergruppe gehören nicht in die
+  // eigentliche Einkaufsliste. Offene Artikel stehen zuerst.
+  const sorted = [...visible].sort((a, b) => {
+    if (a.purchased !== b.purchased) return a.purchased ? 1 : -1;
+    return new Date(b.created_at || b.added_at || 0) - new Date(a.created_at || a.added_at || 0);
+  });
+
+  $("shoppingList").innerHTML = `<div class="flat-shopping-list">${sorted.map(renderItem).join("")}</div>`;
 }
 
 function renderItem(i) {
