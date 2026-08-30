@@ -87,3 +87,17 @@ Für diese Funktion muss einmalig `catalog_products.sql` im Supabase SQL Editor 
 - Einmalig muss `weekly_shopping_items.sql` im Supabase SQL Editor ausgeführt werden.
 
 Hinweis: Die vier Personen sind weiterhin App-Profile und keine passwortgeschützten Benutzerkonten. Die App zeigt jeweils nur die Wochenliste des aktuell gewählten Profils an.
+
+
+## Version 12 – dauerhafte persönliche Wocheneinkaufs-Grundliste
+
+Die persönliche Liste funktioniert neu als dauerhafte Grundliste:
+
+- Produkte bleiben über Wochen hinweg gespeichert.
+- Neue Produkte können jederzeit ergänzt werden.
+- Beim Wocheneinkauf werden gekaufte Produkte abgehakt.
+- Mit «Häkchen zurücksetzen» wird die Liste für den nächsten Einkauf vorbereitet.
+- Beim Zurücksetzen werden nur die Häkchen entfernt; kein Produkt wird gelöscht.
+- Die gemeinsame Einkaufsliste bleibt vollständig unabhängig davon.
+
+Einmalig `weekly_shopping_items_v12_migration.sql` im Supabase SQL Editor ausführen.

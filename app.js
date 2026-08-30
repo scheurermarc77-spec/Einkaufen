@@ -18,31 +18,8 @@ function configured() {
   return config.SUPABASE_URL.startsWith("http") && !config.SUPABASE_ANON_KEY.startsWith("HIER_");
 }
 
-function getWeekStartDate(date = new Date()) {
-  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  return d;
-}
-
-function dateToYmd(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function currentWeekStartYmd() {
-  return dateToYmd(getWeekStartDate());
-}
-
 function currentWeekLabel() {
-  const start = getWeekStartDate();
-  const end = new Date(start);
-  end.setDate(end.getDate() + 6);
-  const fmt = new Intl.DateTimeFormat("de-CH", { day: "2-digit", month: "2-digit" });
-  return `${fmt.format(start)} – ${fmt.format(end)}`;
+  return "Dauerhafte persönliche Grundliste";
 }
 
 function currentActiveItems() {
@@ -54,13 +31,12 @@ function updateListModeUI() {
   $("sharedModeBtn").classList.toggle("active", !weekly);
   $("weeklyModeBtn").classList.toggle("active", weekly);
   $("listTitle").textContent = weekly
-    ? `📅 ${currentPerson || "Meine"} Wochenliste`
+    ? `🧾 ${currentPerson || "Meine"} Einkaufsliste`
     : "🛒 Einkaufsliste";
   $("addSectionTitle").textContent = weekly
-    ? "➕ Wochenliste ergänzen"
+    ? "➕ Persönliche Liste ergänzen"
     : "➕ Einkaufsliste ergänzen";
-  $("weeklyPeriod").classList.toggle("hidden", !weekly);
-  $("weeklyPeriod").textContent = weekly ? `Kalenderwoche · ${currentWeekLabel()}` : "";
+  if ($("weeklyPeriod")) $("weeklyPeriod").classList.toggle("hidden", !weekly);
   localStorage.setItem("family-shop-list-mode", activeListMode);
   hidePurchased = false;
   renderList();
@@ -132,6 +108,7 @@ function buildCatalog() {
 
   $("sharedModeBtn").addEventListener("click", () => switchListMode("shared"));
   $("weeklyModeBtn").addEventListener("click", () => switchListMode("weekly"));
+  $("resetWeeklyBtn").addEventListener("click", resetWeeklyChecks);
 
   refreshSubgroups();
   setupSpeechSearch();
@@ -559,9 +536,15 @@ async function addItem(name, category, subgroup) {
   if (!db) return $("setupDialog").showModal();
 
   if (activeListMode === "weekly") {
+    // Die persönliche Einkaufsliste ist eine dauerhafte Grundliste.
+    // Gleiche Produkte werden nicht doppelt angelegt.
+    const duplicate = weeklyItems.some(i =>
+      normalizeProductName(i.product_name) === normalizeProductName(name)
+    );
+    if (duplicate) return toast(`${name} ist bereits in deiner Grundliste`);
+
     const { error } = await db.from("weekly_shopping_items").insert({
       owner: currentPerson,
-      week_start: currentWeekStartYmd(),
       product_name: name,
       category,
       subcategory: subgroup,
@@ -569,9 +552,9 @@ async function addItem(name, category, subgroup) {
     });
     if (error) {
       console.warn(error);
-      return toast("Wochenliste konnte nicht ergänzt werden");
+      return toast("Persönliche Liste konnte nicht ergänzt werden");
     }
-    toast(`${name} zur Wochenliste hinzugefügt`);
+    toast(`${name} zur persönlichen Liste hinzugefügt`);
     return;
   }
 
@@ -614,7 +597,6 @@ async function loadWeeklyItems() {
   const { data, error } = await db.from("weekly_shopping_items")
     .select("*")
     .eq("owner", currentPerson)
-    .eq("week_start", currentWeekStartYmd())
     .order("purchased", { ascending: true })
     .order("added_at", { ascending: false });
 
@@ -622,7 +604,7 @@ async function loadWeeklyItems() {
     console.warn("weekly_shopping_items nicht verfügbar", error.message);
     weeklyItems = [];
     if (activeListMode === "weekly") {
-      $("syncState").textContent = "Wochenlisten-Funktion noch nicht eingerichtet";
+      $("syncState").textContent = "Persönliche Liste noch nicht eingerichtet";
       renderList();
     }
     return;
@@ -630,7 +612,7 @@ async function loadWeeklyItems() {
 
   weeklyItems = data || [];
   if (activeListMode === "weekly") {
-    $("syncState").textContent = "Persönlich synchronisiert";
+    $("syncState").textContent = "Persönliche Liste synchronisiert";
     renderList();
   }
 }
@@ -645,7 +627,7 @@ function renderList() {
 
   if (!visible.length) {
     const text = activeListMode === "weekly"
-      ? "📅 Deine Wochenliste für diese Woche ist leer."
+      ? "🧾 Deine persönliche Grundliste ist noch leer."
       : "🧺 Die Einkaufsliste ist leer.";
     $("shoppingList").innerHTML = `<div class="empty">${text}</div>`;
     return;
@@ -841,6 +823,29 @@ function renderCustomGroups() {
   }).join("");
 }
 
+
+async function resetWeeklyChecks() {
+  if (!db || !currentPerson) return;
+  if (!weeklyItems.some(i => i.purchased)) {
+    return toast("Es gibt keine Häkchen zum Zurücksetzen");
+  }
+
+  if (!confirm("Alle Häkchen deiner persönlichen Einkaufsliste zurücksetzen? Die Produkte bleiben erhalten.")) return;
+
+  const { error } = await db.from("weekly_shopping_items")
+    .update({ purchased: false, purchased_at: null })
+    .eq("owner", currentPerson)
+    .eq("purchased", true);
+
+  if (error) {
+    console.warn(error);
+    return toast("Häkchen konnten nicht zurückgesetzt werden");
+  }
+
+  toast("Bereit für den nächsten Wocheneinkauf");
+  await loadWeeklyItems();
+}
+
 $("clearPurchasedBtn").onclick = () => { hidePurchased = !hidePurchased; renderList(); };
 $("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]); };
 $("closeSetup").onclick = () => $("setupDialog").close();
@@ -871,7 +876,7 @@ async function start() {
       .on("postgres_changes", { event: "*", schema: "public", table: "catalog_groups" }, loadCatalogGroups)
       .on("postgres_changes", { event: "*", schema: "public", table: "catalog_products" }, loadCatalogProducts)
       .subscribe(status => {
-        if (status === "SUBSCRIBED") $("syncState").textContent = activeListMode === "weekly" ? "Persönlich synchronisiert" : "Live synchronisiert";
+        if (status === "SUBSCRIBED") $("syncState").textContent = activeListMode === "weekly" ? "Persönliche Liste synchronisiert" : "Live synchronisiert";
       });
   }
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});

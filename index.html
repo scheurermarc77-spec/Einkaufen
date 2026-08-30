@@ -26,7 +26,7 @@
     <main>
       <nav class="list-switcher" aria-label="Liste auswählen">
         <button id="sharedModeBtn" class="mode-btn active" type="button">👨‍👩‍👧‍👦 Gemeinsam</button>
-        <button id="weeklyModeBtn" class="mode-btn" type="button">📅 Meine Wochenliste</button>
+        <button id="weeklyModeBtn" class="mode-btn" type="button">🧾 Mein Wocheneinkauf</button>
       </nav>
 
       <section class="list-section list-card">
@@ -38,7 +38,11 @@
           <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
         </div>
 
-        <div id="weeklyPeriod" class="weekly-period hidden"></div>
+        
+        <div id="weeklyPeriod" class="weekly-period hidden">
+          <span>Deine persönliche Grundliste bleibt dauerhaft gespeichert.</span>
+          <button id="resetWeeklyBtn" class="reset-weekly-btn" type="button">↺ Häkchen zurücksetzen</button>
+        </div>
 
         <div class="list-toolbar">
           <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
