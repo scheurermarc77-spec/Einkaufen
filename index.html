@@ -528,13 +528,143 @@ main {
   }
 }
 
+
+/* v20 – vollständige Katalogverwaltung */
+.catalog-admin-card {
+  max-height: min(86vh, 820px);
+  overflow: auto;
+}
+.admin-note {
+  padding: 11px 12px;
+  background: #eef4ff;
+  border: 1px solid #d7e4fa;
+  border-radius: 12px;
+  color: #4d607c;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+.admin-section {
+  border: 1px solid #e1e5e2;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 10px 0;
+  background: #fff;
+}
+.admin-section > summary {
+  padding: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #f7f8f7;
+}
+.admin-section-body { padding: 12px; }
+.admin-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.admin-row {
+  display: grid;
+  grid-template-columns: 1fr 42px 42px;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #e2e6e3;
+  border-radius: 12px;
+  padding: 6px;
+  background: #fff;
+}
+.admin-main-button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 6px;
+  min-width: 0;
+}
+.admin-main-button strong { display: block; font-size: 14px; }
+.admin-main-button span {
+  display: block;
+  color: #777;
+  font-size: 11px;
+  margin-top: 2px;
+}
+.admin-edit-btn,
+.admin-delete-btn {
+  border: 0;
+  border-radius: 10px;
+  min-height: 38px;
+  font-size: 16px;
+}
+.admin-edit-btn { background: #edf4ff; }
+.admin-delete-btn { background: #fdeceb; }
+.admin-edit-btn.small,
+.admin-delete-btn.small {
+  min-height: 31px;
+  min-width: 34px;
+  font-size: 13px;
+}
+.admin-category-card {
+  border: 1px solid #dfe5e1;
+  border-radius: 13px;
+  padding: 10px;
+  background: #fbfcfb;
+}
+.admin-category-head,
+.admin-subgroup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.admin-category-head { padding-bottom: 8px; }
+.admin-subgroups {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid #e8ebe9;
+  padding-top: 7px;
+}
+.admin-subgroup-row {
+  background: white;
+  padding: 6px 7px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+.admin-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.admin-inline {
+  display: grid;
+  grid-template-columns: 1fr 46px;
+  gap: 7px;
+}
+.small-primary-btn {
+  border: 0;
+  border-radius: 11px;
+  background: #183a2e;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 700;
+}
+.compact-manage { margin: 8px 0; }
+.danger-btn {
+  border: 0;
+  border-radius: 12px;
+  background: #fde7e5;
+  color: #a22b27;
+  padding: 12px 16px;
+  margin-top: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 </style>
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v19</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v20</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -603,36 +733,78 @@ main {
       <button value="cancel" class="ghost-btn full">Schliessen</button>
     </form>
   </dialog>
-
-
   <dialog id="catalogDialog">
-    <div class="dialog-card">
+    <div class="dialog-card catalog-admin-card">
       <div class="section-title-row">
-        <h2>Kategorien verwalten</h2>
+        <h2>🗂 Katalog verwalten</h2>
         <button id="closeCatalogDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
       </div>
-      <p>Eigene Kategorien und Untergruppen werden in der Cloud gespeichert und sind deshalb für Leon, Papi, Mami und Anouk sichtbar.</p>
 
-      <div class="manage-block">
-        <label for="newCategoryName">Neue Kategorie</label>
-        <input id="newCategoryName" type="text" placeholder="z. B. Garten" />
-        <button id="addCategoryBtn" class="primary-btn" type="button">Kategorie erstellen</button>
+      <div class="admin-note">
+        Produkte, Untergruppen und Kategorien können hier erstellt, umbenannt oder gelöscht werden.
+        Änderungen gelten für alle Familienmitglieder.
       </div>
 
-      <div class="manage-block">
-        <label for="manageCategorySelect">Kategorie für neue Untergruppe</label>
-        <select id="manageCategorySelect"></select>
-        <div id="manageSubgroupHint" class="small-muted"></div>
-        <label for="newSubgroupName">Neue Untergruppe</label>
-        <input id="newSubgroupName" type="text" placeholder="z. B. Pflanzenpflege" />
-        <button id="addSubgroupBtn" class="primary-btn" type="button">Untergruppe erstellen</button>
-      </div>
+      <details class="admin-section" open>
+        <summary>📦 Produkte bearbeiten</summary>
+        <div class="admin-section-body">
+          <label for="manageProductSearch">Produkt suchen</label>
+          <input id="manageProductSearch" type="search" placeholder="z. B. Milch" autocomplete="off" />
+          <div id="manageProductResults" class="admin-list"></div>
+        </div>
+      </details>
 
-      <h3 class="mini-heading">Eigene Einträge</h3>
-      <div id="customGroupList"></div>
+      <details class="admin-section">
+        <summary>🗂 Kategorien & Untergruppen</summary>
+        <div class="admin-section-body">
+          <div class="manage-block compact-manage">
+            <label for="newCategoryName">Neue Kategorie</label>
+            <div class="admin-inline">
+              <input id="newCategoryName" type="text" placeholder="z. B. Garten" />
+              <button id="addCategoryBtn" class="small-primary-btn" type="button">＋</button>
+            </div>
+          </div>
+
+          <div class="manage-block compact-manage">
+            <label for="manageCategorySelect">Neue Untergruppe erstellen in</label>
+            <select id="manageCategorySelect"></select>
+            <label for="newSubgroupName">Name der Untergruppe</label>
+            <div class="admin-inline">
+              <input id="newSubgroupName" type="text" placeholder="z. B. Pflanzenpflege" />
+              <button id="addSubgroupBtn" class="small-primary-btn" type="button">＋</button>
+            </div>
+          </div>
+
+          <h3 class="mini-heading">Vorhandene Kategorien</h3>
+          <div id="customGroupList" class="admin-list"></div>
+          <div id="manageSubgroupHint" class="hidden"></div>
+        </div>
+      </details>
     </div>
   </dialog>
 
+  <dialog id="editProductDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>✏️ Produkt bearbeiten</h2>
+        <button id="closeEditProductDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+
+      <input id="editProductId" type="hidden" />
+
+      <label for="editProductName">Produktname</label>
+      <input id="editProductName" type="text" autocomplete="off" />
+
+      <label for="editProductCategory">Kategorie</label>
+      <select id="editProductCategory"></select>
+
+      <label for="editProductSubgroup">Untergruppe</label>
+      <select id="editProductSubgroup"></select>
+
+      <button id="saveEditedProductBtn" class="primary-btn" type="button">Änderungen speichern</button>
+      <button id="deleteEditedProductBtn" class="danger-btn full" type="button">🗑 Produkt löschen</button>
+    </div>
+  </dialog>
 
   <dialog id="newProductDialog">
     <div class="dialog-card">
@@ -977,14 +1149,14 @@ function initProfile() {
 }
 
 function getAllCategories() {
-  const categories = new Set(Object.keys(PRODUCT_CATALOG));
+  const categories = new Set();
   for (const g of customGroups) if (g.category) categories.add(g.category);
   for (const p of cloudProducts) if (p.category) categories.add(p.category);
   return [...categories].sort((a, b) => a.localeCompare(b, "de"));
 }
 
 function getSubgroups(category) {
-  const groups = new Set(Object.keys(PRODUCT_CATALOG[category] || {}));
+  const groups = new Set();
   for (const g of customGroups) {
     if (g.category === category && g.subcategory) groups.add(g.subcategory);
   }
@@ -1094,31 +1266,13 @@ function setupSpeechSearch() {
 
 
 function allCatalogProducts() {
-  const all = [];
-
-  for (const [category, subgroups] of Object.entries(PRODUCT_CATALOG)) {
-    for (const [subgroup, arr] of Object.entries(subgroups)) {
-      for (const name of arr) all.push({ name, category, subgroup, source: "standard" });
-    }
-  }
-
-  for (const p of cloudProducts) {
-    all.push({
-      name: p.product_name,
-      category: p.category,
-      subgroup: p.subcategory,
-      source: "cloud"
-    });
-  }
-
-  // Doppelte Einträge zusammenfassen
-  const seen = new Set();
-  return all.filter(p => {
-    const key = `${p.name}|||${p.category}|||${p.subgroup}`.toLocaleLowerCase("de-CH");
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return cloudProducts.map(p => ({
+    id: p.id,
+    name: p.product_name,
+    category: p.category,
+    subgroup: p.subcategory,
+    source: "cloud"
+  }));
 }
 
 function normalizeProductName(value) {
@@ -1385,14 +1539,12 @@ $("saveNewProductBtn").onclick = async () => {
 async function saveCatalogProduct(name, category, subgroup) {
   if (!db) return false;
 
-  // Auch die fest eingebauten Produkte gelten als bereits vorhanden.
-  const alreadyExists = allCatalogProducts().some(
-    p => normalizeProductName(p.name) === normalizeProductName(name)
+  const alreadyExists = cloudProducts.some(
+    p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
+      p.category.toLowerCase() === category.toLowerCase() &&
+      p.subcategory.toLowerCase() === subgroup.toLowerCase()
   );
-  if (alreadyExists) {
-    // Wenn derselbe Name bereits im Katalog vorhanden ist, nichts doppelt speichern.
-    return true;
-  }
+  if (alreadyExists) return true;
 
   const { error } = await db.from("catalog_products").insert({
     product_name: String(name).trim().replace(/\s+/g, " "),
@@ -1622,31 +1774,41 @@ $("shoppingList").addEventListener("click", async e => {
   if (error) toast("Löschen fehlgeschlagen");
 });
 
-// --- Eigene Kategorien & Untergruppen ---
+// --- Katalogverwaltung ---
 $("manageCatalogBtn").onclick = () => {
   refreshCategorySelectors();
-  renderCustomGroups();
+  renderCatalogAdmin();
   $("catalogDialog").showModal();
 };
 $("closeCatalogDialog").onclick = () => $("catalogDialog").close();
+
+$("manageProductSearch").addEventListener("input", renderManagedProducts);
 $("manageCategorySelect").addEventListener("change", refreshManageSubgroupList);
 
 $("addCategoryBtn").onclick = async () => {
   if (!currentPerson) return $("profileDialog").showModal();
-  const category = $("newCategoryName").value.trim();
+  const category = $("newCategoryName").value.trim().replace(/\s+/g, " ");
   if (!category) return toast("Bitte Kategoriename eingeben");
-  await ensureCatalogGroup(category, null);
-  $("newCategoryName").value = "";
+  const ok = await ensureCatalogGroup(category, null);
+  if (ok) {
+    $("newCategoryName").value = "";
+    await refreshCatalogAfterChange();
+    toast("Kategorie erstellt");
+  }
 };
 
 $("addSubgroupBtn").onclick = async () => {
   if (!currentPerson) return $("profileDialog").showModal();
   const category = $("manageCategorySelect").value;
-  const subgroup = $("newSubgroupName").value.trim();
+  const subgroup = $("newSubgroupName").value.trim().replace(/\s+/g, " ");
   if (!category) return toast("Bitte Kategorie wählen");
   if (!subgroup) return toast("Bitte Untergruppe eingeben");
-  await ensureCatalogGroup(category, subgroup);
-  $("newSubgroupName").value = "";
+  const ok = await ensureCatalogGroup(category, subgroup);
+  if (ok) {
+    $("newSubgroupName").value = "";
+    await refreshCatalogAfterChange();
+    toast("Untergruppe erstellt");
+  }
 };
 
 async function ensureCatalogGroup(category, subcategory = null) {
@@ -1659,16 +1821,7 @@ async function ensureCatalogGroup(category, subcategory = null) {
     g => g.category.toLowerCase() === cleanCategory.toLowerCase() &&
       (g.subcategory || "").toLowerCase() === (normalizedSub || "").toLowerCase()
   );
-
-  const matchingStaticCategory = Object.keys(PRODUCT_CATALOG)
-    .find(c => c.toLowerCase() === cleanCategory.toLowerCase());
-
-  const staticCategoryExists = Boolean(matchingStaticCategory) && !normalizedSub;
-  const staticSubgroupExists = normalizedSub && matchingStaticCategory &&
-    Object.keys(PRODUCT_CATALOG[matchingStaticCategory] || {})
-      .some(g => g.toLowerCase() === normalizedSub.toLowerCase());
-
-  if (exists || staticCategoryExists || staticSubgroupExists) return true;
+  if (exists) return true;
 
   const { error } = await db.from("catalog_groups").insert({
     category: cleanCategory,
@@ -1678,16 +1831,12 @@ async function ensureCatalogGroup(category, subcategory = null) {
 
   if (error) {
     const msg = String(error.message || "");
-    // Ein paralleles Gerät könnte denselben Eintrag gerade erstellt haben.
     if (msg.includes("duplicate") || msg.includes("unique")) {
       await loadCatalogGroups();
       return true;
     }
-    if (msg.includes("catalog_groups") || msg.includes("relation")) {
-      toast("Kategorien-Funktion muss zuerst in Supabase aktiviert werden");
-    } else {
-      toast("Kategorie oder Untergruppe konnte nicht gespeichert werden");
-    }
+    toast("Kategorie oder Untergruppe konnte nicht gespeichert werden");
+    console.warn(error);
     return false;
   }
 
@@ -1697,38 +1846,363 @@ async function ensureCatalogGroup(category, subcategory = null) {
 
 async function loadCatalogGroups() {
   if (!db) return;
-  const { data, error } = await db.from("catalog_groups").select("*").order("category").order("subcategory");
+  const { data, error } = await db.from("catalog_groups")
+    .select("*")
+    .order("category")
+    .order("subcategory");
+
   if (error) {
     console.warn("catalog_groups nicht verfügbar", error.message);
     return;
   }
+
   customGroups = data || [];
   refreshCategorySelectors();
   refreshSubgroups();
-  renderCustomGroups();
+  renderCatalogAdmin();
 }
 
 function refreshManageSubgroupList() {
   const category = $("manageCategorySelect").value;
   const groups = getSubgroups(category);
-  $("manageSubgroupHint").textContent = groups.length ? `Vorhanden: ${groups.join(", ")}` : "Noch keine Untergruppen vorhanden.";
+  $("manageSubgroupHint").textContent = groups.length ? groups.join(", ") : "";
+}
+
+function renderCatalogAdmin() {
+  renderCustomGroups();
+  renderManagedProducts();
+}
+
+function renderManagedProducts() {
+  if (!$("manageProductResults")) return;
+  const q = $("manageProductSearch").value.trim().toLocaleLowerCase("de-CH");
+
+  if (!q) {
+    $("manageProductResults").innerHTML =
+      `<div class="catalog-empty">Produktnamen eingeben, um Produkte zu bearbeiten oder zu löschen.</div>`;
+    return;
+  }
+
+  const matches = cloudProducts
+    .filter(p => `${p.product_name} ${p.category} ${p.subcategory}`.toLocaleLowerCase("de-CH").includes(q))
+    .sort((a, b) => a.product_name.localeCompare(b.product_name, "de"))
+    .slice(0, 60);
+
+  if (!matches.length) {
+    $("manageProductResults").innerHTML = `<div class="catalog-empty">Kein Produkt gefunden.</div>`;
+    return;
+  }
+
+  $("manageProductResults").innerHTML = matches.map(p => `
+    <div class="admin-row">
+      <button class="admin-main-button" type="button" data-edit-product-id="${p.id}">
+        <strong>${escapeHtml(p.product_name)}</strong>
+        <span>${escapeHtml(p.category)} · ${escapeHtml(p.subcategory)}</span>
+      </button>
+      <button class="admin-edit-btn" type="button" data-edit-product-id="${p.id}" aria-label="Bearbeiten">✏️</button>
+      <button class="admin-delete-btn" type="button" data-delete-product-id="${p.id}" aria-label="Löschen">🗑</button>
+    </div>
+  `).join("");
+}
+
+$("manageProductResults").addEventListener("click", async e => {
+  const deleteBtn = e.target.closest("[data-delete-product-id]");
+  if (deleteBtn) {
+    await deleteCatalogProductById(deleteBtn.dataset.deleteProductId);
+    return;
+  }
+
+  const editBtn = e.target.closest("[data-edit-product-id]");
+  if (editBtn) openEditProductDialog(editBtn.dataset.editProductId);
+});
+
+function openEditProductDialog(id) {
+  const product = cloudProducts.find(p => String(p.id) === String(id));
+  if (!product) return;
+
+  $("editProductId").value = product.id;
+  $("editProductName").value = product.product_name;
+
+  fillEditProductCategories(product.category);
+  fillEditProductSubgroups(product.category, product.subcategory);
+
+  $("editProductDialog").showModal();
+}
+
+function fillEditProductCategories(selected = "") {
+  const categories = getAllCategories();
+  $("editProductCategory").innerHTML = categories
+    .map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`)
+    .join("");
+  if (categories.includes(selected)) $("editProductCategory").value = selected;
+}
+
+function fillEditProductSubgroups(category, selected = "") {
+  const groups = getSubgroups(category);
+  $("editProductSubgroup").innerHTML = groups
+    .map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)
+    .join("");
+  if (groups.includes(selected)) $("editProductSubgroup").value = selected;
+}
+
+$("editProductCategory").addEventListener("change", () => {
+  fillEditProductSubgroups($("editProductCategory").value);
+});
+
+$("closeEditProductDialog").onclick = () => $("editProductDialog").close();
+
+$("saveEditedProductBtn").onclick = async () => {
+  const id = $("editProductId").value;
+  const name = $("editProductName").value.trim().replace(/\s+/g, " ");
+  const category = $("editProductCategory").value;
+  const subgroup = $("editProductSubgroup").value;
+
+  if (!name || !category || !subgroup) return toast("Alle Felder ausfüllen");
+
+  const duplicate = cloudProducts.some(p =>
+    String(p.id) !== String(id) &&
+    normalizeProductName(p.product_name) === normalizeProductName(name) &&
+    p.category.toLowerCase() === category.toLowerCase() &&
+    p.subcategory.toLowerCase() === subgroup.toLowerCase()
+  );
+  if (duplicate) return toast("Dieses Produkt existiert dort bereits");
+
+  const { error } = await db.from("catalog_products")
+    .update({
+      product_name: name,
+      category,
+      subcategory: subgroup
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.warn(error);
+    return toast("Produkt konnte nicht geändert werden");
+  }
+
+  $("editProductDialog").close();
+  await refreshCatalogAfterChange();
+  toast("Produkt geändert");
+};
+
+$("deleteEditedProductBtn").onclick = async () => {
+  const id = $("editProductId").value;
+  const ok = await deleteCatalogProductById(id);
+  if (ok) $("editProductDialog").close();
+};
+
+async function deleteCatalogProductById(id) {
+  const product = cloudProducts.find(p => String(p.id) === String(id));
+  if (!product) return false;
+
+  if (!confirm(`„${product.product_name}“ aus dem Produktkatalog löschen? Bereits eingetragene Einkaufslisten bleiben unverändert.`)) {
+    return false;
+  }
+
+  const { error } = await db.from("catalog_products").delete().eq("id", id);
+  if (error) {
+    console.warn(error);
+    toast("Produkt konnte nicht gelöscht werden");
+    return false;
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Produkt gelöscht");
+  return true;
 }
 
 function renderCustomGroups() {
   if (!$("customGroupList")) return;
-  if (!customGroups.length) {
-    $("customGroupList").innerHTML = `<div class="catalog-empty">Noch keine eigenen Kategorien oder Untergruppen erstellt.</div>`;
+
+  const categories = getAllCategories();
+  if (!categories.length) {
+    $("customGroupList").innerHTML = `<div class="catalog-empty">Keine Kategorien vorhanden.</div>`;
     return;
   }
-  const byCategory = {};
-  for (const g of customGroups) (byCategory[g.category] ||= []).push(g);
-  $("customGroupList").innerHTML = Object.entries(byCategory).map(([category, rows]) => {
-    const subgroups = rows.filter(r => r.subcategory).map(r => r.subcategory);
-    const creators = [...new Set(rows.map(r => r.created_by).filter(Boolean))].join(", ");
-    return `<div class="custom-group-row">
-      <div><strong>${escapeHtml(category)}</strong>${subgroups.length ? `<div class="small-muted">${subgroups.map(escapeHtml).join(" · ")}</div>` : `<div class="small-muted">Kategorie ohne Untergruppe</div>`}${creators ? `<div class="small-muted">Erstellt von ${escapeHtml(creators)}</div>` : ""}</div>
-    </div>`;
+
+  $("customGroupList").innerHTML = categories.map(category => {
+    const groups = getSubgroups(category);
+    return `
+      <div class="admin-category-card">
+        <div class="admin-category-head">
+          <strong>${escapeHtml(category)}</strong>
+          <div class="admin-actions">
+            <button class="admin-edit-btn" type="button" data-rename-category="${escapeAttr(category)}" aria-label="Kategorie umbenennen">✏️</button>
+            <button class="admin-delete-btn" type="button" data-delete-category="${escapeAttr(category)}" aria-label="Kategorie löschen">🗑</button>
+          </div>
+        </div>
+
+        <div class="admin-subgroups">
+          ${groups.length ? groups.map(subgroup => `
+            <div class="admin-subgroup-row">
+              <span>${escapeHtml(subgroup)}</span>
+              <div class="admin-actions">
+                <button class="admin-edit-btn small" type="button"
+                  data-rename-subgroup="${escapeAttr(subgroup)}"
+                  data-category="${escapeAttr(category)}"
+                  aria-label="Untergruppe umbenennen">✏️</button>
+                <button class="admin-delete-btn small" type="button"
+                  data-delete-subgroup="${escapeAttr(subgroup)}"
+                  data-category="${escapeAttr(category)}"
+                  aria-label="Untergruppe löschen">🗑</button>
+              </div>
+            </div>
+          `).join("") : `<div class="small-muted">Noch keine Untergruppen</div>`}
+        </div>
+      </div>
+    `;
   }).join("");
+}
+
+$("customGroupList").addEventListener("click", async e => {
+  const renameCategory = e.target.closest("[data-rename-category]");
+  if (renameCategory) {
+    await renameCatalogCategory(renameCategory.dataset.renameCategory);
+    return;
+  }
+
+  const deleteCategory = e.target.closest("[data-delete-category]");
+  if (deleteCategory) {
+    await deleteCatalogCategory(deleteCategory.dataset.deleteCategory);
+    return;
+  }
+
+  const renameSub = e.target.closest("[data-rename-subgroup]");
+  if (renameSub) {
+    await renameCatalogSubgroup(renameSub.dataset.category, renameSub.dataset.renameSubgroup);
+    return;
+  }
+
+  const deleteSub = e.target.closest("[data-delete-subgroup]");
+  if (deleteSub) {
+    await deleteCatalogSubgroup(deleteSub.dataset.category, deleteSub.dataset.deleteSubgroup);
+  }
+});
+
+async function renameCatalogCategory(oldCategory) {
+  const newCategory = prompt("Neuer Name der Kategorie:", oldCategory)?.trim().replace(/\s+/g, " ");
+  if (!newCategory || newCategory === oldCategory) return;
+
+  const existingOther = getAllCategories().some(c =>
+    c.toLowerCase() === newCategory.toLowerCase() &&
+    c.toLowerCase() !== oldCategory.toLowerCase()
+  );
+  if (existingOther) return toast("Eine Kategorie mit diesem Namen existiert bereits");
+
+  const productUpdate = await db.from("catalog_products")
+    .update({ category: newCategory })
+    .eq("category", oldCategory);
+
+  if (productUpdate.error) {
+    console.warn(productUpdate.error);
+    return toast("Kategorie konnte nicht umbenannt werden");
+  }
+
+  const groupUpdate = await db.from("catalog_groups")
+    .update({ category: newCategory })
+    .eq("category", oldCategory);
+
+  if (groupUpdate.error) {
+    console.warn(groupUpdate.error);
+    return toast("Kategorie wurde nur teilweise geändert");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Kategorie umbenannt");
+}
+
+async function deleteCatalogCategory(category) {
+  const count = cloudProducts.filter(p => p.category === category).length;
+  if (!confirm(`Kategorie „${category}“ löschen? Dabei werden auch ${count} Produkte aus dieser Kategorie aus dem Produktkatalog gelöscht. Bereits bestehende Einkaufslisten bleiben unverändert.`)) {
+    return;
+  }
+
+  const productDelete = await db.from("catalog_products").delete().eq("category", category);
+  if (productDelete.error) {
+    console.warn(productDelete.error);
+    return toast("Produkte der Kategorie konnten nicht gelöscht werden");
+  }
+
+  const groupDelete = await db.from("catalog_groups").delete().eq("category", category);
+  if (groupDelete.error) {
+    console.warn(groupDelete.error);
+    return toast("Kategorie konnte nicht vollständig gelöscht werden");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Kategorie gelöscht");
+}
+
+async function renameCatalogSubgroup(category, oldSubgroup) {
+  const newSubgroup = prompt("Neuer Name der Untergruppe:", oldSubgroup)?.trim().replace(/\s+/g, " ");
+  if (!newSubgroup || newSubgroup === oldSubgroup) return;
+
+  const exists = getSubgroups(category).some(g =>
+    g.toLowerCase() === newSubgroup.toLowerCase() &&
+    g.toLowerCase() !== oldSubgroup.toLowerCase()
+  );
+  if (exists) return toast("Diese Untergruppe existiert bereits");
+
+  const productUpdate = await db.from("catalog_products")
+    .update({ subcategory: newSubgroup })
+    .eq("category", category)
+    .eq("subcategory", oldSubgroup);
+
+  if (productUpdate.error) {
+    console.warn(productUpdate.error);
+    return toast("Untergruppe konnte nicht umbenannt werden");
+  }
+
+  const groupUpdate = await db.from("catalog_groups")
+    .update({ subcategory: newSubgroup })
+    .eq("category", category)
+    .eq("subcategory", oldSubgroup);
+
+  if (groupUpdate.error) {
+    console.warn(groupUpdate.error);
+    return toast("Untergruppe wurde nur teilweise geändert");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Untergruppe umbenannt");
+}
+
+async function deleteCatalogSubgroup(category, subgroup) {
+  const count = cloudProducts.filter(p => p.category === category && p.subcategory === subgroup).length;
+  if (!confirm(`Untergruppe „${subgroup}“ löschen? Dabei werden auch ${count} Produkte aus dieser Untergruppe aus dem Produktkatalog gelöscht. Bereits bestehende Einkaufslisten bleiben unverändert.`)) {
+    return;
+  }
+
+  const productDelete = await db.from("catalog_products")
+    .delete()
+    .eq("category", category)
+    .eq("subcategory", subgroup);
+
+  if (productDelete.error) {
+    console.warn(productDelete.error);
+    return toast("Produkte der Untergruppe konnten nicht gelöscht werden");
+  }
+
+  const groupDelete = await db.from("catalog_groups")
+    .delete()
+    .eq("category", category)
+    .eq("subcategory", subgroup);
+
+  if (groupDelete.error) {
+    console.warn(groupDelete.error);
+    return toast("Untergruppe konnte nicht vollständig gelöscht werden");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Untergruppe gelöscht");
+}
+
+async function refreshCatalogAfterChange() {
+  await Promise.all([loadCatalogGroups(), loadCatalogProducts()]);
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderCatalogAdmin();
+  renderProducts();
 }
 
 
