@@ -703,7 +703,7 @@ main {
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v21</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v22</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -1469,6 +1469,26 @@ function normalizeProductName(value) {
   return String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase("de-CH");
 }
 
+// v22 – Suchtreffer sinnvoll ordnen:
+// 1. Produktname beginnt mit Suchtext
+// 2. ein Wort im Produktnamen beginnt mit Suchtext
+// 3. Produktname enthält Suchtext
+// 4. Treffer nur in Kategorie/Untergruppe
+function productSearchRank(name, category, subgroup, query) {
+  const q = normalizeProductName(query);
+  if (!q) return 0;
+  const n = normalizeProductName(name);
+  const c = normalizeProductName(category);
+  const sg = normalizeProductName(subgroup);
+
+  if (n === q) return 0;
+  if (n.startsWith(q)) return 1;
+  if (n.split(/[^\p{L}\p{N}]+/u).some(word => word.startsWith(q))) return 2;
+  if (n.includes(q)) return 3;
+  if (c.includes(q) || sg.includes(q)) return 4;
+  return 99;
+}
+
 function renderProducts() {
   const selectedCategory = $("categorySelect").value;
   const selectedSubgroup = $("subgroupSelect").value;
@@ -1500,7 +1520,14 @@ function renderProducts() {
     return;
   }
 
-  products.sort((a, b) => a.name.localeCompare(b.name, "de"));
+  products.sort((a, b) => {
+    if (q) {
+      const rankDiff = productSearchRank(a.name, a.category, a.subgroup, q) -
+        productSearchRank(b.name, b.category, b.subgroup, q);
+      if (rankDiff) return rankDiff;
+    }
+    return a.name.localeCompare(b.name, "de-CH", { sensitivity: "base" });
+  });
 
   const exactExists = q && all.some(p => normalizeProductName(p.name) === normalizeProductName(rawQuery));
 
@@ -2154,7 +2181,12 @@ function renderManagedProducts() {
 
   const matches = cloudProducts
     .filter(p => `${p.product_name} ${p.category} ${p.subcategory}`.toLocaleLowerCase("de-CH").includes(q))
-    .sort((a, b) => a.product_name.localeCompare(b.product_name, "de"))
+    .sort((a, b) => {
+      const rankDiff = productSearchRank(a.product_name, a.category, a.subcategory, q) -
+        productSearchRank(b.product_name, b.category, b.subcategory, q);
+      if (rankDiff) return rankDiff;
+      return a.product_name.localeCompare(b.product_name, "de-CH", { sensitivity: "base" });
+    })
     .slice(0, 60);
 
   if (!matches.length) {
