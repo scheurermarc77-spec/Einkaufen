@@ -820,13 +820,68 @@ main {
   .list-product-thumb { width: 40px; height: 40px; }
 }
 
+/* v24 – Produktbilder antippen und vergrössern */
+.product-thumb-wrap img,
+.admin-product-thumb img,
+.list-product-thumb img,
+.product-image-preview img {
+  cursor: zoom-in;
+}
+.product-image-dialog {
+  max-width: min(94vw, 980px);
+  width: auto;
+  padding: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+.product-image-dialog::backdrop {
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(4px);
+}
+.product-image-viewer {
+  position: relative;
+  display: grid;
+  place-items: center;
+  max-width: 94vw;
+  max-height: 88vh;
+}
+.product-image-viewer img {
+  display: block;
+  max-width: 94vw;
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 18px 70px rgba(0,0,0,.38);
+}
+.product-image-viewer-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.94);
+  color: #111;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  box-shadow: 0 3px 14px rgba(0,0,0,.2);
+}
+
 </style>
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v23</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v24</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -886,6 +941,13 @@ main {
       </section>
     </main>
   </div>
+
+  <dialog id="productImageDialog" class="product-image-dialog" aria-label="Produktfoto vergrössert">
+    <div class="product-image-viewer">
+      <button id="closeProductImageDialog" class="product-image-viewer-close" type="button" aria-label="Bild schliessen">×</button>
+      <img id="productImageLarge" alt="Produktfoto" />
+    </div>
+  </dialog>
 
   <dialog id="profileDialog">
     <form method="dialog" class="dialog-card">
@@ -2973,6 +3035,39 @@ async function resetWeeklyChecks() {
 $("clearPurchasedBtn").onclick = () => { hidePurchased = !hidePurchased; renderList(); };
 $("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]); };
 
+
+function openProductImageViewer(src, alt = "Produktfoto") {
+  const dialog = $("productImageDialog");
+  const img = $("productImageLarge");
+  if (!dialog || !img || !src) return;
+  img.src = src;
+  img.alt = alt || "Produktfoto";
+  if (!dialog.open) dialog.showModal();
+}
+
+function closeProductImageViewer() {
+  const dialog = $("productImageDialog");
+  const img = $("productImageLarge");
+  if (dialog?.open) dialog.close();
+  if (img) img.removeAttribute("src");
+}
+
+$("closeProductImageDialog").onclick = closeProductImageViewer;
+$("productImageDialog").addEventListener("click", e => {
+  if (e.target === $("productImageDialog")) closeProductImageViewer();
+});
+
+// Capture-Listener: Beim Tippen auf ein Produktbild nur das Bild öffnen
+// und nicht gleichzeitig den umgebenden Produkt-Button auslösen.
+document.addEventListener("click", e => {
+  const img = e.target.closest?.(
+    ".product-thumb-wrap img, .admin-product-thumb img, .list-product-thumb img, .product-image-preview img"
+  );
+  if (!img) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openProductImageViewer(img.currentSrc || img.src, img.alt || "Produktfoto");
+}, true);
 
 function formatDate(iso) {
   if (!iso) return "";
