@@ -875,7 +875,7 @@ main {
   box-shadow: 0 3px 14px rgba(0,0,0,.2);
 }
 
-/* v25 – Produktbild über Websuche auswählen */
+/* v26 – Produktbild über Google-Bildersuche */
 .image-source-actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -981,7 +981,7 @@ main {
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v25</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v26</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -1177,16 +1177,36 @@ main {
   <dialog id="webImageDialog" class="web-image-dialog">
     <div class="dialog-card">
       <div class="section-title-row">
-        <h2>🌐 Bild im Web suchen</h2>
+        <h2>🌐 Google-Bildersuche</h2>
         <button id="closeWebImageDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
       </div>
       <div class="web-image-search-row">
         <input id="webImageSearchInput" type="search" placeholder="Produkt suchen …" autocomplete="off" />
-        <button id="webImageSearchBtn" type="button">Suchen</button>
+        <button id="webImageSearchBtn" type="button">Google öffnen</button>
       </div>
-      <div id="webImageStatus" class="web-image-status"></div>
-      <div id="webImageResults" class="web-image-results"></div>
-      <div class="web-image-note">Die Websuche verwendet Bilder aus Wikimedia Commons. Tippe auf ein Bild, um es als Produktfoto zu übernehmen. Bitte beachte bei einer Weiterverwendung ausserhalb der privaten App die jeweiligen Bildrechte und Quellenangaben.</div>
+      <div id="webImageStatus" class="web-image-status">Google Bilder öffnet sich mit dem Produktnamen in einem neuen Fenster.</div>
+
+      <div class="selection-step" style="margin-top:12px;">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <strong>Bild in Google auswählen</strong>
+          <div class="small-muted">Auf dem iPhone kannst du das gewünschte Bild lange drücken und in «Fotos» sichern. Kehre danach zur App zurück und wähle es über «Foto auswählen» aus.</div>
+        </div>
+      </div>
+
+      <div class="selection-step" style="margin-top:10px;">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <strong>Oder direkte Bildadresse übernehmen</strong>
+          <div class="web-image-search-row" style="margin-top:7px;">
+            <input id="webImageUrlInput" type="url" placeholder="https://…/bild.jpg" autocomplete="off" />
+            <button id="webImageUseUrlBtn" type="button">Übernehmen</button>
+          </div>
+          <div class="small-muted">Falls die Bildseite das direkte Laden erlaubt, wird das Bild in euren Supabase-Fotospeicher übernommen.</div>
+        </div>
+      </div>
+
+      <div class="web-image-note">Die Suche erfolgt über Google Bilder. Google liefert die Suchergebnisse; die App speichert erst dann ein Bild, wenn du es ausdrücklich auswählst bzw. übernimmst. Bitte beachte die jeweiligen Bildrechte.</div>
     </div>
   </dialog>
 
@@ -1723,10 +1743,9 @@ function openWebImageDialog(kind) {
   webImageTargetKind = kind === "edit" ? "edit" : "new";
   const query = webImageProductName(webImageTargetKind);
   $("webImageSearchInput").value = query;
-  $("webImageResults").innerHTML = "";
-  $("webImageStatus").textContent = "";
+  if ($("webImageUrlInput")) $("webImageUrlInput").value = "";
+  $("webImageStatus").textContent = "Google Bilder öffnet sich mit dem Produktnamen in einem neuen Fenster.";
   if (!$("webImageDialog").open) $("webImageDialog").showModal();
-  if (query) searchWebImages();
 }
 
 function closeWebImageDialog() {
@@ -1737,66 +1756,15 @@ function closeWebImageDialog() {
   if ($("webImageDialog")?.open) $("webImageDialog").close();
 }
 
-async function searchWebImages() {
+function openGoogleImageSearch() {
   const q = $("webImageSearchInput")?.value?.trim();
   if (!q) return toast("Bitte einen Suchbegriff eingeben");
-
-  if (webImageSearchController) {
-    try { webImageSearchController.abort(); } catch (_) {}
-  }
-  webImageSearchController = new AbortController();
-
-  $("webImageStatus").textContent = "Suche passende Bilder …";
-  $("webImageResults").innerHTML = "";
-
-  const params = new URLSearchParams({
-    action: "query",
-    generator: "search",
-    gsrsearch: q,
-    gsrnamespace: "6",
-    gsrlimit: "24",
-    prop: "imageinfo",
-    iiprop: "url|mime",
-    iiurlwidth: "1200",
-    format: "json",
-    origin: "*"
-  });
-
-  try {
-    const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`, {
-      signal: webImageSearchController.signal
-    });
-    if (!response.ok) throw new Error(`Websuche fehlgeschlagen (${response.status})`);
-    const payload = await response.json();
-    const pages = Object.values(payload?.query?.pages || {})
-      .map(page => {
-        const info = page?.imageinfo?.[0] || {};
-        return {
-          title: String(page?.title || "").replace(/^File:/i, ""),
-          url: info.thumburl || info.url || "",
-          mime: info.mime || ""
-        };
-      })
-      .filter(x => x.url && /^image\/(jpeg|png|webp|gif)$/i.test(x.mime));
-
-    if (!pages.length) {
-      $("webImageStatus").textContent = "Keine passenden Bilder gefunden. Versuche einen anderen Suchbegriff.";
-      return;
-    }
-
-    $("webImageStatus").textContent = `${pages.length} Bilder gefunden. Tippe auf das gewünschte Bild.`;
-    $("webImageResults").innerHTML = pages.map((img, index) => `
-      <button class="web-image-result" type="button" data-web-image-index="${index}" data-web-image-url="${escapeAttr(img.url)}" data-web-image-title="${escapeAttr(img.title)}">
-        <img src="${escapeAttr(img.url)}" alt="${escapeAttr(img.title)}" loading="lazy" />
-        <span>${escapeHtml(img.title || "Bild")}</span>
-      </button>
-    `).join("");
-  } catch (err) {
-    if (err?.name === "AbortError") return;
-    console.warn("Webbildsuche fehlgeschlagen", err);
-    $("webImageStatus").textContent = "Die Websuche konnte nicht geladen werden. Bitte später nochmals versuchen.";
-  } finally {
-    webImageSearchController = null;
+  const url = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`;
+  const opened = window.open(url, "_blank", "noopener,noreferrer");
+  if (!opened) {
+    window.location.href = url;
+  } else {
+    $("webImageStatus").textContent = "Google-Bildersuche geöffnet. Wähle dort ein Bild aus.";
   }
 }
 
@@ -1822,25 +1790,36 @@ async function useWebImage(url, title = "Produktbild") {
     toast("Webbild ausgewählt");
   } catch (err) {
     console.warn("Webbild konnte nicht übernommen werden", err);
-    $("webImageStatus").textContent = "Dieses Bild konnte nicht übernommen werden. Bitte ein anderes Bild wählen.";
+    $("webImageStatus").textContent = "Diese Bildadresse konnte nicht direkt übernommen werden. Speichere das Bild aus Google in Fotos und wähle es danach über «Foto auswählen».";
   }
 }
 
 $("newProductWebImageBtn").onclick = () => openWebImageDialog("new");
 $("editProductWebImageBtn").onclick = () => openWebImageDialog("edit");
 $("closeWebImageDialog").onclick = closeWebImageDialog;
-$("webImageSearchBtn").onclick = searchWebImages;
+$("webImageSearchBtn").onclick = openGoogleImageSearch;
 $("webImageSearchInput").addEventListener("keydown", e => {
   if (e.key === "Enter") {
     e.preventDefault();
-    searchWebImages();
+    openGoogleImageSearch();
   }
 });
-$("webImageResults").addEventListener("click", e => {
-  const btn = e.target.closest("[data-web-image-url]");
-  if (!btn) return;
-  useWebImage(btn.dataset.webImageUrl, btn.dataset.webImageTitle || "Produktbild");
-});
+if ($("webImageUseUrlBtn")) {
+  $("webImageUseUrlBtn").onclick = () => {
+    const url = $("webImageUrlInput")?.value?.trim();
+    if (!url) return toast("Bitte eine Bildadresse einfügen");
+    useWebImage(url, "Google-Bild");
+  };
+}
+if ($("webImageUrlInput")) {
+  $("webImageUrlInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const url = $("webImageUrlInput")?.value?.trim();
+      if (url) useWebImage(url, "Google-Bild");
+    }
+  });
+}
 
 function fillUnitSelect(select, selected = "Stück") {
   if (!select) return;
