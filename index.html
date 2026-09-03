@@ -697,13 +697,136 @@ main {
   .quantity-input-grid { grid-template-columns: 1fr 1fr; }
 }
 
+
+
+/* v23 – Produktfotos */
+.product-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.product-btn-copy { min-width: 0; flex: 1; }
+.product-thumb-wrap,
+.admin-product-thumb,
+.list-product-thumb {
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #f1f3f1;
+  border: 1px solid #e1e5e2;
+  display: grid;
+  place-items: center;
+  color: #8a918d;
+}
+.product-thumb-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  font-size: 19px;
+}
+.admin-product-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+.list-product-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 17px;
+}
+.product-thumb-wrap img,
+.admin-product-thumb img,
+.list-product-thumb img,
+.product-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.admin-main-button.with-thumb {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+}
+.admin-product-copy { min-width: 0; }
+.item-product-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.item-product-copy { min-width: 0; flex: 1; }
+.image-upload-card {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #e0e5e2;
+  border-radius: 14px;
+  background: #fafbfa;
+}
+.product-image-preview {
+  width: 100%;
+  height: 150px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: #f0f2f0;
+  border: 1px dashed #cbd2ce;
+  display: grid;
+  place-items: center;
+  color: #7b837f;
+  margin: 7px 0 9px;
+}
+.product-image-preview-empty {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  text-align: center;
+  padding: 15px;
+  font-size: 12px;
+}
+.product-image-preview-empty .camera-icon { font-size: 29px; }
+.product-image-file {
+  padding: 7px;
+  font-size: 13px;
+  background: white;
+}
+.product-image-file::file-selector-button {
+  border: 0;
+  border-radius: 9px;
+  background: #edf4ff;
+  color: #1d65b8;
+  padding: 8px 10px;
+  margin-right: 8px;
+  font-weight: 700;
+}
+.remove-image-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: #f4eeee;
+  color: #87423e;
+  padding: 9px 10px;
+  margin-top: 7px;
+  font-weight: 700;
+}
+.photo-status {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+@media (max-width: 390px) {
+  .product-thumb-wrap { width: 42px; height: 42px; }
+  .list-product-thumb { width: 40px; height: 40px; }
+}
+
 </style>
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v22</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v23</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -780,7 +903,7 @@ main {
       </div>
 
       <div class="admin-note">
-        Produkte, Untergruppen und Kategorien können hier erstellt, umbenannt oder gelöscht werden.
+        Produkte, Untergruppen und Kategorien können hier erstellt, umbenannt oder gelöscht werden. Produktfotos können hinzugefügt, ersetzt oder entfernt werden.
         Änderungen gelten für alle Familienmitglieder.
       </div>
 
@@ -843,6 +966,17 @@ main {
       <label for="editProductDefaultUnit">Standard-Masseinheit</label>
       <select id="editProductDefaultUnit"></select>
       <div class="small-muted">Diese Einheit wird beim Hinzufügen vorgeschlagen und kann jedes Mal geändert werden.</div>
+
+      <div class="image-upload-card">
+        <label for="editProductImageInput">Produktfoto</label>
+        <div class="product-image-preview">
+          <img id="editProductImagePreview" class="hidden" alt="Produktfoto Vorschau" />
+          <div id="editProductImageEmpty" class="product-image-preview-empty"><span class="camera-icon">📷</span><span>Noch kein Foto hinterlegt</span></div>
+        </div>
+        <input id="editProductImageInput" class="product-image-file" type="file" accept="image/*" />
+        <button id="removeEditedProductImageBtn" class="remove-image-btn hidden" type="button">Foto entfernen</button>
+        <div class="photo-status">Das Foto wird für alle Familienmitglieder gespeichert.</div>
+      </div>
 
       <button id="saveEditedProductBtn" class="primary-btn" type="button">Änderungen speichern</button>
       <button id="deleteEditedProductBtn" class="danger-btn full" type="button">🗑 Produkt löschen</button>
@@ -927,6 +1061,20 @@ main {
             </div>
           </div>
           <div class="small-muted">Die App schlägt eine Einheit vor. Du kannst sie hier anpassen. Sie wird zugleich als Standard für dieses Produkt gespeichert.</div>
+        </div>
+      </div>
+
+      <div class="selection-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <label for="newProductImageInput">Produktfoto <span class="small-muted">(optional)</span></label>
+          <div class="product-image-preview">
+            <img id="newProductImagePreview" class="hidden" alt="Produktfoto Vorschau" />
+            <div id="newProductImageEmpty" class="product-image-preview-empty"><span class="camera-icon">📷</span><span>Foto auswählen oder direkt mit dem iPhone aufnehmen</span></div>
+          </div>
+          <input id="newProductImageInput" class="product-image-file" type="file" accept="image/*" />
+          <button id="removeNewProductImageBtn" class="remove-image-btn hidden" type="button">Ausgewähltes Foto entfernen</button>
+          <div class="photo-status">Das Foto wird zentral gespeichert und ist danach auf allen Geräten sichtbar.</div>
         </div>
       </div>
 
@@ -1163,6 +1311,12 @@ let pendingNewProductName = "";
 let pendingQuantityProduct = null;
 let pendingQuantityEdit = null;
 let newProductUnitTouched = false;
+let newProductImageFile = null;
+let newProductPreviewObjectUrl = "";
+let editProductImageFile = null;
+let editProductPreviewObjectUrl = "";
+let editProductRemoveImage = false;
+let editProductCurrentImagePath = "";
 let hidePurchased = false;
 let speechRecognition = null;
 let speechListening = false;
@@ -1192,6 +1346,187 @@ function configured() {
   return validConfig(config);
 }
 
+
+const PRODUCT_IMAGE_BUCKET = "product-images";
+
+function encodedStoragePath(path = "") {
+  return String(path).split("/").filter(Boolean).map(encodeURIComponent).join("/");
+}
+
+function productImageUrlFromPath(path = "") {
+  if (!path) return "";
+  return `${config.SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGE_BUCKET}/${encodedStoragePath(path)}`;
+}
+
+function catalogProductImageUrl(product) {
+  return productImageUrlFromPath(product?.image_path || product?.imagePath || "");
+}
+
+function catalogProductForItem(item) {
+  if (!item) return null;
+  const n = normalizeProductName(item.product_name || item.name);
+  const c = normalizeProductName(item.category);
+  const sg = normalizeProductName(item.subcategory || item.subgroup);
+  return cloudProducts.find(p =>
+    normalizeProductName(p.product_name) === n &&
+    (!c || normalizeProductName(p.category) === c) &&
+    (!sg || normalizeProductName(p.subcategory) === sg)
+  ) || cloudProducts.find(p => normalizeProductName(p.product_name) === n) || null;
+}
+
+function productThumbHtml(product, className = "product-thumb-wrap", fallback = "📦") {
+  const url = catalogProductImageUrl(product);
+  if (!url) return `<span class="${className}" aria-hidden="true">${fallback}</span>`;
+  return `<span class="${className}"><img src="${escapeAttr(url)}" alt="" loading="lazy" /></span>`;
+}
+
+function revokePreviewObjectUrl(kind) {
+  const key = kind === "new" ? "newProductPreviewObjectUrl" : "editProductPreviewObjectUrl";
+  const value = kind === "new" ? newProductPreviewObjectUrl : editProductPreviewObjectUrl;
+  if (value) URL.revokeObjectURL(value);
+  if (kind === "new") newProductPreviewObjectUrl = "";
+  else editProductPreviewObjectUrl = "";
+}
+
+function setProductImagePreview(kind, source = "") {
+  const isNew = kind === "new";
+  const img = $(isNew ? "newProductImagePreview" : "editProductImagePreview");
+  const empty = $(isNew ? "newProductImageEmpty" : "editProductImageEmpty");
+  if (!img || !empty) return;
+  if (source) {
+    img.src = source;
+    img.classList.remove("hidden");
+    empty.classList.add("hidden");
+  } else {
+    img.removeAttribute("src");
+    img.classList.add("hidden");
+    empty.classList.remove("hidden");
+  }
+}
+
+function setLocalImageFile(kind, file) {
+  revokePreviewObjectUrl(kind);
+  if (kind === "new") newProductImageFile = file || null;
+  else editProductImageFile = file || null;
+
+  const removeBtn = $(kind === "new" ? "removeNewProductImageBtn" : "removeEditedProductImageBtn");
+  if (!file) {
+    if (removeBtn && kind === "new") removeBtn.classList.add("hidden");
+    return;
+  }
+  const objectUrl = URL.createObjectURL(file);
+  if (kind === "new") newProductPreviewObjectUrl = objectUrl;
+  else editProductPreviewObjectUrl = objectUrl;
+  setProductImagePreview(kind, objectUrl);
+  if (removeBtn) removeBtn.classList.remove("hidden");
+}
+
+async function compressProductImage(file) {
+  if (!file || !String(file.type || "").startsWith("image/")) throw new Error("Bitte eine Bilddatei auswählen");
+  if (file.size > 20 * 1024 * 1024) throw new Error("Das Foto ist zu gross. Maximal 20 MB auswählen.");
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Das Foto konnte nicht gelesen werden"));
+      img.src = sourceUrl;
+    });
+
+    const maxSide = 1200;
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const scale = Math.min(1, maxSide / Math.max(width, height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob) throw new Error("Das Foto konnte nicht verarbeitet werden");
+    return blob;
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
+async function uploadStorageObject(path, blob) {
+  const response = await fetch(`${config.SUPABASE_URL}/storage/v1/object/${PRODUCT_IMAGE_BUCKET}/${encodedStoragePath(path)}`, {
+    method: "POST",
+    headers: {
+      "apikey": config.SUPABASE_ANON_KEY,
+      "Content-Type": "image/jpeg",
+      "x-upsert": "false"
+    },
+    body: blob
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || `Foto-Upload fehlgeschlagen (${response.status})`);
+  }
+}
+
+async function deleteStorageObject(path) {
+  if (!path) return true;
+  try {
+    const response = await fetch(`${config.SUPABASE_URL}/storage/v1/object/${PRODUCT_IMAGE_BUCKET}/${encodedStoragePath(path)}`, {
+      method: "DELETE",
+      headers: {
+        "apikey": config.SUPABASE_ANON_KEY
+      }
+    });
+    return response.ok || response.status === 404;
+  } catch (err) {
+    console.warn("Produktfoto konnte nicht aus Storage gelöscht werden", err);
+    return false;
+  }
+}
+
+async function saveCatalogProductImage(product, file, oldPath = "") {
+  if (!product?.id || !file) return false;
+  let newPath = "";
+  try {
+    const blob = await compressProductImage(file);
+    newPath = `${config.HOUSEHOLD_ID}/product-${product.id}-${Date.now()}.jpg`;
+    await uploadStorageObject(newPath, blob);
+
+    const { error } = await db.from("catalog_products")
+      .update({ image_path: newPath })
+      .eq("id", product.id);
+    if (error) {
+      await deleteStorageObject(newPath);
+      if (/image_path|column/i.test(String(error.message || ""))) throw new Error("Bitte zuerst die v23-Supabase-Datei ausführen");
+      throw new Error(error.message || "Foto konnte nicht gespeichert werden");
+    }
+
+    if (oldPath && oldPath !== newPath) await deleteStorageObject(oldPath);
+    return true;
+  } catch (err) {
+    console.warn(err);
+    toast(err?.message?.includes("v23-Supabase") ? err.message : "Foto konnte nicht gespeichert werden. Bitte v23-Supabase prüfen.");
+    return false;
+  }
+}
+
+async function removeCatalogProductImage(product) {
+  if (!product?.id) return false;
+  const oldPath = product.image_path || "";
+  const { error } = await db.from("catalog_products")
+    .update({ image_path: null })
+    .eq("id", product.id);
+  if (error) {
+    console.warn(error);
+    if (/image_path|column/i.test(String(error.message || ""))) toast("Bitte zuerst die v23-Supabase-Datei ausführen");
+    else toast("Foto konnte nicht entfernt werden");
+    return false;
+  }
+  if (oldPath) await deleteStorageObject(oldPath);
+  return true;
+}
 
 function fillUnitSelect(select, selected = "Stück") {
   if (!select) return;
@@ -1461,6 +1796,7 @@ function allCatalogProducts() {
     category: p.category,
     subgroup: p.subcategory,
     defaultUnit: productDefaultUnit(p),
+    imagePath: p.image_path || "",
     source: "cloud"
   }));
 }
@@ -1533,8 +1869,11 @@ function renderProducts() {
 
   const productButtons = products.map(p =>
     `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-category="${escapeAttr(p.category)}" data-subgroup="${escapeAttr(p.subgroup)}" data-unit="${escapeAttr(p.defaultUnit)}">
-      <span class="product-btn-name">➕ ${escapeHtml(p.name)}</span>
-      ${q ? `<span class="product-btn-meta">${escapeHtml(p.category)} · ${escapeHtml(p.subgroup)} · Standard: ${escapeHtml(p.defaultUnit)}</span>` : ""}
+      ${productThumbHtml(p)}
+      <span class="product-btn-copy">
+        <span class="product-btn-name">➕ ${escapeHtml(p.name)}</span>
+        ${q ? `<span class="product-btn-meta">${escapeHtml(p.category)} · ${escapeHtml(p.subgroup)} · Standard: ${escapeHtml(p.defaultUnit)}</span>` : ""}
+      </span>
     </button>`
   ).join("");
 
@@ -1588,6 +1927,11 @@ function openNewProductDialog(name) {
   $("newProductNameLabel").textContent = cleanName;
   $("newProductQuantity").value = "1";
   fillUnitSelect($("newProductDefaultUnit"), suggestDefaultUnit(cleanName));
+  revokePreviewObjectUrl("new");
+  newProductImageFile = null;
+  $("newProductImageInput").value = "";
+  $("removeNewProductImageBtn").classList.add("hidden");
+  setProductImagePreview("new", "");
 
   // Schritt 1: Kategorie
   const categories = getAllCategories();
@@ -1727,8 +2071,30 @@ function updateNewProductSaveState() {
   }
 }
 
-$("closeNewProductDialog").onclick = () => $("newProductDialog").close();
-$("cancelNewProductBtn").onclick = () => $("newProductDialog").close();
+$("newProductImageInput").addEventListener("change", e => {
+  const file = e.target.files?.[0] || null;
+  if (!file) return;
+  if (!String(file.type || "").startsWith("image/")) {
+    e.target.value = "";
+    return toast("Bitte ein Foto auswählen");
+  }
+  setLocalImageFile("new", file);
+});
+
+$("removeNewProductImageBtn").onclick = () => {
+  revokePreviewObjectUrl("new");
+  newProductImageFile = null;
+  $("newProductImageInput").value = "";
+  $("removeNewProductImageBtn").classList.add("hidden");
+  setProductImagePreview("new", "");
+};
+
+function closeNewProductDialog() {
+  $("newProductDialog").close();
+  revokePreviewObjectUrl("new");
+}
+$("closeNewProductDialog").onclick = closeNewProductDialog;
+$("cancelNewProductBtn").onclick = closeNewProductDialog;
 function closeQuantityDialog() {
   $("quantityDialog").close();
   pendingQuantityProduct = null;
@@ -1783,13 +2149,20 @@ $("saveNewProductBtn").onclick = async () => {
 
   await loadCatalogGroups();
 
-  const productOk = await saveCatalogProduct(name, category, subgroup, defaultUnit);
-  if (!productOk) {
+  const savedProduct = await saveCatalogProduct(name, category, subgroup, defaultUnit);
+  if (!savedProduct) {
     updateNewProductSaveState();
     return;
   }
 
+  if (newProductImageFile) {
+    await saveCatalogProductImage(savedProduct, newProductImageFile, savedProduct.image_path || "");
+    await loadCatalogProducts();
+  }
+
   $("newProductDialog").close();
+  revokePreviewObjectUrl("new");
+  newProductImageFile = null;
   $("productSearch").value = "";
   await addItem(name, category, subgroup, quantity, defaultUnit);
   renderProducts();
@@ -1799,12 +2172,12 @@ $("saveNewProductBtn").onclick = async () => {
 async function saveCatalogProduct(name, category, subgroup, defaultUnit = "Stück") {
   if (!db) return false;
 
-  const alreadyExists = cloudProducts.some(
+  const alreadyExistingProduct = cloudProducts.find(
     p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
       p.category.toLowerCase() === category.toLowerCase() &&
       p.subcategory.toLowerCase() === subgroup.toLowerCase()
   );
-  if (alreadyExists) return true;
+  if (alreadyExistingProduct) return alreadyExistingProduct;
 
   const { error } = await db.from("catalog_products").insert({
     product_name: String(name).trim().replace(/\s+/g, " "),
@@ -1822,7 +2195,11 @@ async function saveCatalogProduct(name, category, subgroup, defaultUnit = "Stüc
       toast("Produktdatenbank muss zuerst in Supabase aktiviert werden");
     } else if (msg.includes("duplicate") || msg.includes("unique")) {
       await loadCatalogProducts();
-      return true;
+      return cloudProducts.find(
+        p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
+          p.category.toLowerCase() === category.toLowerCase() &&
+          p.subcategory.toLowerCase() === subgroup.toLowerCase()
+      ) || false;
     } else {
       toast("Produkt konnte nicht gespeichert werden");
     }
@@ -1831,8 +2208,13 @@ async function saveCatalogProduct(name, category, subgroup, defaultUnit = "Stüc
   }
 
   await loadCatalogProducts();
+  const savedProduct = cloudProducts.find(
+    p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
+      p.category.toLowerCase() === category.toLowerCase() &&
+      p.subcategory.toLowerCase() === subgroup.toLowerCase()
+  );
   toast(`${name} in Datenbank aufgenommen`);
-  return true;
+  return savedProduct || false;
 }
 
 async function loadCatalogProducts() {
@@ -1982,11 +2364,17 @@ function renderList() {
 
 function renderItem(i) {
   if (activeListMode === "weekly") {
+    const catalogProduct = catalogProductForItem(i);
     return `<div class="item weekly-item ${i.purchased ? "done" : ""}" data-id="${i.id}">
       <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
-      <div class="item-title-line">
-        <div class="item-name weekly-item-name">${escapeHtml(i.product_name)}</div>
-        <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${formatQuantity(i.quantity || 1)} ${escapeHtml(i.unit || "Stück")}</button>
+      <div class="item-product-content">
+        ${productThumbHtml(catalogProduct, "list-product-thumb", "🛒")}
+        <div class="item-product-copy">
+          <div class="item-title-line">
+            <div class="item-name weekly-item-name">${escapeHtml(i.product_name)}</div>
+            <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${formatQuantity(i.quantity || 1)} ${escapeHtml(i.unit || "Stück")}</button>
+          </div>
+        </div>
       </div>
       <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
     </div>`;
@@ -1994,14 +2382,18 @@ function renderItem(i) {
 
   const added = formatDate(i.added_at || i.created_at);
   const bought = i.purchased_at ? formatDate(i.purchased_at) : "";
+  const catalogProduct = catalogProductForItem(i);
   return `<div class="item ${i.purchased ? "done" : ""}" data-id="${i.id}">
     <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
-    <div>
-      <div class="item-title-line">
-        <div class="item-name">${escapeHtml(i.product_name)}</div>
-        <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${formatQuantity(i.quantity || 1)} ${escapeHtml(i.unit || "Stück")}</button>
+    <div class="item-product-content">
+      ${productThumbHtml(catalogProduct, "list-product-thumb", "🛒")}
+      <div class="item-product-copy">
+        <div class="item-title-line">
+          <div class="item-name">${escapeHtml(i.product_name)}</div>
+          <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${formatQuantity(i.quantity || 1)} ${escapeHtml(i.unit || "Stück")}</button>
+        </div>
+        <div class="meta">📝 Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>✅ Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
       </div>
-      <div class="meta">📝 Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>✅ Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
     </div>
     <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
   </div>`;
@@ -2196,9 +2588,12 @@ function renderManagedProducts() {
 
   $("manageProductResults").innerHTML = matches.map(p => `
     <div class="admin-row">
-      <button class="admin-main-button" type="button" data-edit-product-id="${p.id}">
-        <strong>${escapeHtml(p.product_name)}</strong>
-        <span>${escapeHtml(p.category)} · ${escapeHtml(p.subcategory)} · Standard: ${escapeHtml(productDefaultUnit(p))}</span>
+      <button class="admin-main-button with-thumb" type="button" data-edit-product-id="${p.id}">
+        ${productThumbHtml(p, "admin-product-thumb")}
+        <span class="admin-product-copy">
+          <strong>${escapeHtml(p.product_name)}</strong>
+          <span>${escapeHtml(p.category)} · ${escapeHtml(p.subcategory)} · Standard: ${escapeHtml(productDefaultUnit(p))}</span>
+        </span>
       </button>
       <button class="admin-edit-btn" type="button" data-edit-product-id="${p.id}" aria-label="Bearbeiten">✏️</button>
       <button class="admin-delete-btn" type="button" data-delete-product-id="${p.id}" aria-label="Löschen">🗑</button>
@@ -2228,6 +2623,14 @@ function openEditProductDialog(id) {
   fillEditProductSubgroups(product.category, product.subcategory);
   fillUnitSelect($("editProductDefaultUnit"), productDefaultUnit(product));
 
+  revokePreviewObjectUrl("edit");
+  editProductImageFile = null;
+  editProductRemoveImage = false;
+  editProductCurrentImagePath = product.image_path || "";
+  $("editProductImageInput").value = "";
+  setProductImagePreview("edit", catalogProductImageUrl(product));
+  $("removeEditedProductImageBtn").classList.toggle("hidden", !product.image_path);
+
   $("editProductDialog").showModal();
 }
 
@@ -2251,7 +2654,31 @@ $("editProductCategory").addEventListener("change", () => {
   fillEditProductSubgroups($("editProductCategory").value);
 });
 
-$("closeEditProductDialog").onclick = () => $("editProductDialog").close();
+$("editProductImageInput").addEventListener("change", e => {
+  const file = e.target.files?.[0] || null;
+  if (!file) return;
+  if (!String(file.type || "").startsWith("image/")) {
+    e.target.value = "";
+    return toast("Bitte ein Foto auswählen");
+  }
+  editProductRemoveImage = false;
+  setLocalImageFile("edit", file);
+});
+
+$("removeEditedProductImageBtn").onclick = () => {
+  revokePreviewObjectUrl("edit");
+  editProductImageFile = null;
+  editProductRemoveImage = true;
+  $("editProductImageInput").value = "";
+  setProductImagePreview("edit", "");
+  $("removeEditedProductImageBtn").classList.add("hidden");
+};
+
+function closeEditProductDialog() {
+  $("editProductDialog").close();
+  revokePreviewObjectUrl("edit");
+}
+$("closeEditProductDialog").onclick = closeEditProductDialog;
 
 $("saveEditedProductBtn").onclick = async () => {
   const id = $("editProductId").value;
@@ -2285,7 +2712,15 @@ $("saveEditedProductBtn").onclick = async () => {
     return toast("Produkt konnte nicht geändert werden");
   }
 
+  const productForImage = { id, image_path: editProductCurrentImagePath };
+  if (editProductImageFile) {
+    await saveCatalogProductImage(productForImage, editProductImageFile, editProductCurrentImagePath);
+  } else if (editProductRemoveImage && editProductCurrentImagePath) {
+    await removeCatalogProductImage(productForImage);
+  }
+
   $("editProductDialog").close();
+  revokePreviewObjectUrl("edit");
   await refreshCatalogAfterChange();
   toast("Produkt geändert");
 };
@@ -2304,6 +2739,7 @@ async function deleteCatalogProductById(id) {
     return false;
   }
 
+  const imagePath = product.image_path || "";
   const { error } = await db.from("catalog_products").delete().eq("id", id);
   if (error) {
     console.warn(error);
@@ -2311,6 +2747,7 @@ async function deleteCatalogProductById(id) {
     return false;
   }
 
+  if (imagePath) await deleteStorageObject(imagePath);
   await refreshCatalogAfterChange();
   toast("Produkt gelöscht");
   return true;
