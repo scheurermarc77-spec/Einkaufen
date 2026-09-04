@@ -1057,7 +1057,7 @@ main {
       <div class="quantity-input-grid">
         <div>
           <label for="quantityValue">Menge</label>
-          <input id="quantityValue" type="text" inputmode="decimal" autocomplete="off" value="1" />
+          <input id="quantityValue" type="text" inputmode="decimal" autocomplete="off" placeholder="optional" />
         </div>
         <div>
           <label for="quantityUnit">Masseinheit</label>
@@ -1114,7 +1114,7 @@ main {
           <div class="quantity-input-grid">
             <div>
               <label for="newProductQuantity">Menge</label>
-              <input id="newProductQuantity" type="text" inputmode="decimal" autocomplete="off" value="1" />
+              <input id="newProductQuantity" type="text" inputmode="decimal" autocomplete="off" placeholder="optional" />
             </div>
             <div>
               <label for="newProductDefaultUnit">Masseinheit</label>
@@ -1598,14 +1598,21 @@ function fillUnitSelect(select, selected = "Stück") {
 
 function parseQuantity(value) {
   const normalized = String(value ?? "").trim().replace(",", ".");
+  if (!normalized) return null;
   const number = Number(normalized);
-  return Number.isFinite(number) && number > 0 ? number : null;
+  return Number.isFinite(number) && number > 0 ? number : NaN;
 }
 
 function formatQuantity(value) {
-  const number = Number(value ?? 1);
-  if (!Number.isFinite(number)) return "1";
+  if (value === null || value === undefined || value === "") return "";
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
   return new Intl.NumberFormat("de-CH", { maximumFractionDigits: 2 }).format(number);
+}
+
+function quantityLabel(quantity, unit = "Stück") {
+  const formatted = formatQuantity(quantity);
+  return formatted ? `${formatted} ${unit}` : unit;
 }
 
 function suggestDefaultUnit(name = "", category = "", subgroup = "") {
@@ -1654,7 +1661,7 @@ function openQuantityDialog(product, editItem = null) {
 
   $("quantityDialogTitle").textContent = editItem ? "Menge bearbeiten" : "Menge angeben";
   $("quantityProductLabel").textContent = product?.name || product?.product_name || editItem?.product_name || "Produkt";
-  $("quantityValue").value = editItem ? formatQuantity(editItem.quantity || 1) : "1";
+  $("quantityValue").value = editItem ? formatQuantity(editItem.quantity) : "";
   fillUnitSelect($("quantityUnit"), editItem?.unit || productDefaultUnit(product));
   $("saveQuantityBtn").textContent = editItem ? "Menge speichern" : "Auf Liste setzen";
   $("quantityDialog").showModal();
@@ -1665,7 +1672,7 @@ async function saveEditedQuantity() {
   if (!pendingQuantityEdit) return;
   const quantity = parseQuantity($("quantityValue").value);
   const unit = $("quantityUnit").value;
-  if (!quantity) return toast("Bitte eine gültige Menge grösser als 0 eingeben");
+  if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
 
   const table = activeListMode === "weekly" ? "weekly_shopping_items" : "shopping_items";
   let query = db.from(table).update({ quantity, unit }).eq("id", pendingQuantityEdit.id);
@@ -1986,7 +1993,7 @@ function openNewProductDialog(name) {
   pendingNewProductName = cleanName;
   newProductUnitTouched = false;
   $("newProductNameLabel").textContent = cleanName;
-  $("newProductQuantity").value = "1";
+  $("newProductQuantity").value = "";
   fillUnitSelect($("newProductDefaultUnit"), suggestDefaultUnit(cleanName));
   revokePreviewObjectUrl("new");
   newProductImageFile = null;
@@ -2169,7 +2176,7 @@ $("saveQuantityBtn").onclick = async () => {
 
   const quantity = parseQuantity($("quantityValue").value);
   const unit = $("quantityUnit").value;
-  if (!quantity) return toast("Bitte eine gültige Menge grösser als 0 eingeben");
+  if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
 
   const product = pendingQuantityProduct;
   const ok = await addItem(product.name, product.category, product.subgroup, quantity, unit);
@@ -2191,7 +2198,7 @@ $("saveNewProductBtn").onclick = async () => {
   if (!name) return;
   if (!category) return toast("Bitte Kategorie auswählen oder erstellen");
   if (!subgroup) return toast("Bitte Untergruppe auswählen oder erstellen");
-  if (!quantity) return toast("Bitte eine gültige Menge grösser als 0 eingeben");
+  if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
 
   $("saveNewProductBtn").disabled = true;
 
@@ -2296,7 +2303,7 @@ async function loadCatalogProducts() {
   renderProducts();
 }
 
-async function addItem(name, category, subgroup, quantity = 1, unit = "Stück") {
+async function addItem(name, category, subgroup, quantity = null, unit = "Stück") {
   if (!currentPerson) return $("profileDialog").showModal();
   if (!db) return toast("Cloud-Verbindung noch nicht bereit");
 
@@ -2324,7 +2331,7 @@ async function addItem(name, category, subgroup, quantity = 1, unit = "Stück") 
       return false;
     }
     await loadWeeklyItems();
-    toast(`${name} · ${formatQuantity(quantity)} ${unit} hinzugefügt`);
+    toast(`${name} · ${quantityLabel(quantity, unit)} hinzugefügt`);
     return true;
   }
 
@@ -2344,7 +2351,7 @@ async function addItem(name, category, subgroup, quantity = 1, unit = "Stück") 
     return false;
   }
   await loadItems();
-  toast(`${name} · ${formatQuantity(quantity)} ${unit} hinzugefügt`);
+  toast(`${name} · ${quantityLabel(quantity, unit)} hinzugefügt`);
   return true;
 }
 
@@ -2433,7 +2440,7 @@ function renderItem(i) {
         <div class="item-product-copy">
           <div class="item-title-line">
             <div class="item-name weekly-item-name">${escapeHtml(i.product_name)}</div>
-            <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${formatQuantity(i.quantity || 1)} ${escapeHtml(i.unit || "Stück")}</button>
+            <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${escapeHtml(quantityLabel(i.quantity, i.unit || "Stück"))}</button>
           </div>
         </div>
       </div>
@@ -2451,7 +2458,7 @@ function renderItem(i) {
       <div class="item-product-copy">
         <div class="item-title-line">
           <div class="item-name">${escapeHtml(i.product_name)}</div>
-          <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${formatQuantity(i.quantity || 1)} ${escapeHtml(i.unit || "Stück")}</button>
+          <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${escapeHtml(quantityLabel(i.quantity, i.unit || "Stück"))}</button>
         </div>
         <div class="meta">📝 Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>✅ Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
       </div>
