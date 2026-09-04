@@ -1,0 +1,3133 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#f7f7f5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Familien Einkauf" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<title>Familien Einkauf</title>
+  <style>
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  color: #171717;
+  background: #f4f4f1;
+  --card: #ffffff;
+  --border: #deded9;
+  --muted: #6f716f;
+  --accent: #183a2e;
+  --accent-soft: #e8f0ec;
+  --danger: #9f2e2e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--card); min-height: 100vh; }
+#app { max-width: 780px; margin: 0 auto; background: #f7f7f5; min-height: 100vh; }
+.topbar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; padding: calc(18px + env(safe-area-inset-top)) 18px 14px; background: rgba(247,247,245,.94); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); }
+h1 { margin: 0; font-size: 26px; letter-spacing: -.5px; }
+h2 { margin: 0; font-size: 19px; }
+.eyebrow { text-transform: uppercase; font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 4px; }
+main { padding: 14px 14px calc(40px + env(safe-area-inset-bottom)); }
+.summary-card, .add-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 14px; box-shadow: 0 5px 18px rgba(0,0,0,.035); }
+.summary-card { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center; }
+.summary-card div { display: flex; flex-direction: column; }
+.summary-card strong { font-size: 25px; }
+.summary-card span { color: var(--muted); font-size: 12px; }
+.summary-card button { grid-column: 1 / -1; }
+.section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+label { display: block; color: var(--muted); font-size: 12px; margin: 11px 0 5px; }
+select, input { width: 100%; border: 1px solid var(--border); background: #fff; border-radius: 12px; font-size: 16px; padding: 12px; outline: none; }
+select:focus, input:focus { border-color: #8d9e96; box-shadow: 0 0 0 3px rgba(24,58,46,.08); }
+.product-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; max-height: 330px; overflow: auto; margin-top: 12px; padding-bottom: 2px; }
+.product-btn { text-align: left; border: 1px solid var(--border); background: #fafaf8; border-radius: 13px; padding: 10px 11px; font-size: 14px; min-height: 44px; }
+.product-btn:active { transform: scale(.985); background: var(--accent-soft); }
+.primary-btn, .ghost-btn, .profile-pill, .icon-btn, .text-btn { border: 0; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.primary-btn { width: 100%; background: var(--accent); color: white; padding: 13px 16px; margin-top: 14px; font-size: 15px; }
+.ghost-btn { background: #efefeb; padding: 10px 12px; color: #333; }
+.profile-pill { padding: 9px 12px; background: var(--accent-soft); color: var(--accent); }
+.icon-btn { width: 38px; height: 38px; background: #eee; font-size: 20px; }
+.text-btn { background: transparent; color: var(--accent); }
+.full { width: 100%; }
+.hidden { display: none !important; }
+.list-section { margin-top: 18px; }
+.sticky-title { margin-bottom: 5px; }
+.sync-state { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+.group { margin: 14px 0 18px; }
+.group-title { font-size: 13px; color: #555; font-weight: 700; margin: 0 4px 7px; display: flex; justify-content: space-between; }
+.item { background: #fff; border: 1px solid var(--border); border-radius: 15px; padding: 11px 12px; margin-bottom: 8px; display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; }
+.item.done { opacity: .66; }
+.item.done .item-name { text-decoration: line-through; }
+.check { appearance: none; width: 28px; height: 28px; border: 2px solid #9ca39f; border-radius: 50%; margin: 0; position: relative; }
+.check:checked { background: var(--accent); border-color: var(--accent); }
+.check:checked::after { content: "✓"; color: white; position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; }
+.item-name { font-weight: 700; margin-bottom: 4px; }
+.meta { font-size: 11px; color: var(--muted); line-height: 1.35; }
+.delete-btn { border: 0; background: transparent; color: #888; font-size: 21px; padding: 5px; }
+.empty { padding: 25px 15px; text-align: center; color: var(--muted); background: #fff; border: 1px dashed var(--border); border-radius: 15px; }
+dialog { border: 0; border-radius: 20px; padding: 0; max-width: 390px; width: calc(100% - 28px); box-shadow: 0 25px 80px rgba(0,0,0,.22); }
+dialog::backdrop { background: rgba(0,0,0,.35); backdrop-filter: blur(3px); }
+.dialog-card { padding: 20px; }
+.dialog-card p { color: var(--muted); line-height: 1.45; }
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.profile-choice { border: 1px solid var(--border); background: #fafaf8; padding: 15px 10px; border-radius: 14px; font-size: 16px; font-weight: 700; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #171717; color: white; padding: 10px 13px; border-radius: 10px; font-size: 13px; z-index: 20; }
+@media (min-width: 650px) { .product-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+.title-actions { display: flex; gap: 6px; align-items: center; }
+.catalog-empty { grid-column: 1 / -1; color: var(--muted); font-size: 13px; padding: 14px; border: 1px dashed var(--border); border-radius: 12px; background: #fafaf8; }
+.manage-block { background: #fafaf8; border: 1px solid var(--border); border-radius: 15px; padding: 13px; margin: 12px 0; }
+.small-muted { color: var(--muted); font-size: 11px; line-height: 1.4; margin-top: 5px; }
+.mini-heading { font-size: 14px; margin: 18px 0 8px; }
+.custom-group-row { background: #fff; border: 1px solid var(--border); border-radius: 13px; padding: 11px 12px; margin-bottom: 7px; }
+
+/* Globale Produktsuche */
+.product-btn-name {
+  display: block;
+  font-weight: 650;
+}
+.product-btn-meta {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  opacity: 0.66;
+}
+
+
+/* Neue Produkte direkt aus der Suche in die gemeinsame Produktdatenbank aufnehmen */
+.new-product-suggestion {
+  grid-column: 1 / -1;
+  border: 1px solid #b9c9c1;
+  background: var(--accent-soft);
+  border-radius: 15px;
+  padding: 13px;
+  display: grid;
+  gap: 10px;
+}
+.new-product-copy {
+  display: grid;
+  gap: 3px;
+}
+.new-product-copy strong {
+  font-size: 14px;
+  color: var(--accent);
+}
+.new-product-copy span {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.compact-btn {
+  width: auto;
+  margin-top: 0;
+  justify-self: start;
+  padding: 10px 13px;
+}
+.dialog-secondary {
+  margin-top: 9px;
+}
+button:disabled, select:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+
+/* v7 – Suche zuerst, neue Kategorie/Untergruppe direkt beim Produkt anlegen */
+.browse-details {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,255,255,.55);
+  overflow: hidden;
+}
+.browse-details summary {
+  padding: 12px 13px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  user-select: none;
+}
+.browse-controls {
+  padding: 0 13px 13px;
+}
+.selection-step {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  align-items: start;
+  margin-top: 14px;
+}
+.step-number {
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: white;
+  font-weight: 800;
+  font-size: 13px;
+  margin-top: 25px;
+}
+.step-content {
+  min-width: 0;
+}
+.inline-create {
+  margin-top: 10px;
+  padding: 11px;
+  border: 1px dashed #a8bcb2;
+  background: var(--accent-soft);
+  border-radius: 12px;
+}
+.choice-hint {
+  margin-top: 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: #f3f5f4;
+}
+
+
+/* v8 – übersichtlichere Oberfläche */
+:root {
+  --blue-soft: #e7f1ff;
+  --blue: #2d68c4;
+  --green-soft: #e8f6ee;
+  --green: #287a4d;
+  --yellow-soft: #fff5d9;
+  --yellow: #9a6a00;
+  --red-soft: #fde9e7;
+  --purple-soft: #f0e8ff;
+  --purple: #6b4ac9;
+}
+.list-card {
+  background: linear-gradient(180deg, #eff8f1 0%, #ffffff 100%);
+  border: 1px solid #d8eadf;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 6px 18px rgba(25,53,39,.05);
+}
+.add-card-color {
+  background: linear-gradient(180deg, #eef4ff 0%, #ffffff 100%);
+  border-color: #dbe6fb;
+}
+.section-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+.summary-card {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 16px;
+}
+.stat-chip div { display: flex; flex-direction: column; }
+.stat-chip strong { font-size: 24px; line-height: 1; }
+.stat-chip span:last-child { font-size: 12px; color: var(--muted); }
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: rgba(255,255,255,.8);
+}
+.stat-open { background: var(--yellow-soft); }
+.stat-done { background: var(--green-soft); }
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr 52px;
+  gap: 8px;
+  align-items: stretch;
+}
+.speech-btn {
+  border: 0;
+  border-radius: 12px;
+  background: var(--purple-soft);
+  color: var(--purple);
+  font-size: 20px;
+  font-weight: 700;
+}
+.speech-btn.listening {
+  background: #ffdfe0;
+  color: #b4232b;
+  animation: pulseMic 1.1s infinite;
+}
+@keyframes pulseMic {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.title-actions .text-btn {
+  background: rgba(45,104,196,.08);
+  color: var(--blue);
+  padding: 9px 12px;
+}
+.group {
+  margin: 14px 0 18px;
+  border-radius: 16px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #edf0ed;
+}
+.group-title {
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0 2px 9px;
+}
+.group-count {
+  min-width: 24px;
+  text-align: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.85);
+}
+.group-color-0 { background: #f5fbf6; border-color: #dceede; }
+.group-color-0 .group-title { color: #2c7747; }
+.group-color-1 { background: #f8f5ff; border-color: #e3dbfb; }
+.group-color-1 .group-title { color: #6848c4; }
+.group-color-2 { background: #eef7ff; border-color: #d7e7fb; }
+.group-color-2 .group-title { color: #2d68c4; }
+.group-color-3 { background: #fff8ea; border-color: #f3e1ac; }
+.group-color-3 .group-title { color: #9a6a00; }
+.group-color-4 { background: #fff1ef; border-color: #f7d8d2; }
+.group-color-4 .group-title { color: #b94b3a; }
+.group-color-5 { background: #f1faf8; border-color: #d8efea; }
+.group-color-5 .group-title { color: #0d7765; }
+.item {
+  box-shadow: 0 2px 8px rgba(0,0,0,.03);
+}
+.item.done {
+  background: #f5fbf6;
+  border-color: #d7eadc;
+}
+.product-btn {
+  background: white;
+  border: 1px solid #dbe6fb;
+}
+.product-btn:active { background: #edf4ff; }
+.delete-btn { font-size: 16px; }
+.catalog-empty { background: #fff; }
+@media (max-width: 560px) {
+  .product-grid { grid-template-columns: 1fr; }
+  .summary-card { grid-template-columns: 1fr; }
+}
+
+
+/* v9 – Einkaufsliste steht im Fokus */
+main {
+  padding-top: 10px;
+}
+.list-section {
+  margin-top: 0;
+}
+.list-card {
+  background: #ffffff;
+  border: 1px solid #dfe7e2;
+  box-shadow: 0 5px 16px rgba(25,53,39,.045);
+}
+.list-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.open-count-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef3f0;
+  color: #516158;
+  font-size: 11px;
+  font-weight: 700;
+}
+.list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 2px 0 12px;
+}
+.list-toolbar .sync-state {
+  margin: 0;
+}
+.small-action-btn {
+  border: 0;
+  border-radius: 10px;
+  background: #f2f3f2;
+  color: #5e625f;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.flat-shopping-list {
+  display: grid;
+  gap: 8px;
+}
+.flat-shopping-list .item {
+  margin-bottom: 0;
+  border-color: #e4e8e5;
+  box-shadow: none;
+}
+.flat-shopping-list .item:not(.done) {
+  border-left: 4px solid #4b8768;
+}
+.flat-shopping-list .item.done {
+  border-left: 4px solid #b8c8be;
+}
+.add-card-color {
+  margin-top: 16px;
+}
+
+
+/* v11 – gemeinsame Liste + persönliche Wochenliste */
+.section-hint {
+  display: none !important;
+}
+.list-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+  padding: 4px;
+  border-radius: 15px;
+  background: #e9ecea;
+}
+.mode-btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 8px;
+  background: transparent;
+  color: #5a625d;
+  font-size: 13px;
+  font-weight: 750;
+}
+.mode-btn.active {
+  background: #fff;
+  color: #183a2e;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+#weeklyModeBtn.active {
+  color: #315f9b;
+  background: #f2f7ff;
+}
+.weekly-period {
+  margin: -2px 0 10px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  background: #eef4ff;
+  color: #315f9b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.red-search {
+  border: 2px solid #d84a4a !important;
+}
+.red-search:focus {
+  border-color: #bd3030 !important;
+  box-shadow: 0 0 0 3px rgba(216,74,74,.13) !important;
+}
+.weekly-item {
+  border-left: 4px solid #4979b8 !important;
+  background: #fbfdff;
+}
+.weekly-item.done {
+  border-left-color: #aebed3 !important;
+}
+.weekly-item-name {
+  margin: 0;
+}
+@media (max-width: 430px) {
+  .mode-btn {
+    font-size: 12px;
+    padding: 10px 5px;
+  }
+}
+
+
+/* v12 – dauerhafte persönliche Wocheneinkaufs-Grundliste */
+.weekly-period {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.weekly-period span {
+  font-size: 11px;
+  line-height: 1.3;
+}
+.reset-weekly-btn {
+  border: 0;
+  border-radius: 9px;
+  background: #ffffff;
+  color: #315f9b;
+  padding: 7px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .weekly-period {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .reset-weekly-btn {
+    width: 100%;
+  }
+}
+
+
+/* v13 – keine Wochenangabe mehr */
+.weekly-period {
+  justify-content: flex-end;
+}
+.weekly-period span {
+  display: none;
+}
+
+
+/* v14 – Kalenderwochenanzeige vollständig entfernt */
+.weekly-period {
+  display: none !important;
+}
+
+  
+.list-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.reset-only {
+  background: #eef4ff;
+  color: #315f9b;
+}
+@media (max-width: 520px) {
+  .list-toolbar {
+    align-items: flex-start;
+  }
+  .list-toolbar-actions {
+    max-width: 62%;
+  }
+}
+
+
+/* v20 – vollständige Katalogverwaltung */
+.catalog-admin-card {
+  max-height: min(86vh, 820px);
+  overflow: auto;
+}
+.admin-note {
+  padding: 11px 12px;
+  background: #eef4ff;
+  border: 1px solid #d7e4fa;
+  border-radius: 12px;
+  color: #4d607c;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+.admin-section {
+  border: 1px solid #e1e5e2;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 10px 0;
+  background: #fff;
+}
+.admin-section > summary {
+  padding: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #f7f8f7;
+}
+.admin-section-body { padding: 12px; }
+.admin-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.admin-row {
+  display: grid;
+  grid-template-columns: 1fr 42px 42px;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #e2e6e3;
+  border-radius: 12px;
+  padding: 6px;
+  background: #fff;
+}
+.admin-main-button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 6px;
+  min-width: 0;
+}
+.admin-main-button strong { display: block; font-size: 14px; }
+.admin-main-button span {
+  display: block;
+  color: #777;
+  font-size: 11px;
+  margin-top: 2px;
+}
+.admin-edit-btn,
+.admin-delete-btn {
+  border: 0;
+  border-radius: 10px;
+  min-height: 38px;
+  font-size: 16px;
+}
+.admin-edit-btn { background: #edf4ff; }
+.admin-delete-btn { background: #fdeceb; }
+.admin-edit-btn.small,
+.admin-delete-btn.small {
+  min-height: 31px;
+  min-width: 34px;
+  font-size: 13px;
+}
+.admin-category-card {
+  border: 1px solid #dfe5e1;
+  border-radius: 13px;
+  padding: 10px;
+  background: #fbfcfb;
+}
+.admin-category-head,
+.admin-subgroup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.admin-category-head { padding-bottom: 8px; }
+.admin-subgroups {
+  display: grid;
+  gap: 5px;
+  border-top: 1px solid #e8ebe9;
+  padding-top: 7px;
+}
+.admin-subgroup-row {
+  background: white;
+  padding: 6px 7px;
+  border-radius: 9px;
+  font-size: 13px;
+}
+.admin-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.admin-inline {
+  display: grid;
+  grid-template-columns: 1fr 46px;
+  gap: 7px;
+}
+.small-primary-btn {
+  border: 0;
+  border-radius: 11px;
+  background: #183a2e;
+  color: #fff;
+  font-size: 23px;
+  font-weight: 700;
+}
+.compact-manage { margin: 8px 0; }
+.danger-btn {
+  border: 0;
+  border-radius: 12px;
+  background: #fde7e5;
+  color: #a22b27;
+  padding: 12px 16px;
+  margin-top: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+
+
+/* v21 – Mengen und Masseinheiten */
+.quantity-input-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 10px;
+  align-items: end;
+}
+.quantity-input-grid label { margin-top: 8px; }
+.quantity-chip {
+  border: 0;
+  border-radius: 999px;
+  background: #eef3f0;
+  color: #365344;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.quantity-chip:active { transform: scale(.98); }
+.item-title-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.item-title-line .item-name { margin-bottom: 0; }
+.unit-suggestion {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+@media (max-width: 390px) {
+  .quantity-input-grid { grid-template-columns: 1fr 1fr; }
+}
+
+
+
+/* v23 – Produktfotos */
+.product-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.product-btn-copy { min-width: 0; flex: 1; }
+.product-thumb-wrap,
+.admin-product-thumb,
+.list-product-thumb {
+  flex: 0 0 auto;
+  overflow: hidden;
+  background: #f1f3f1;
+  border: 1px solid #e1e5e2;
+  display: grid;
+  place-items: center;
+  color: #8a918d;
+}
+.product-thumb-wrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  font-size: 19px;
+}
+.admin-product-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  font-size: 18px;
+}
+.list-product-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 17px;
+}
+.product-thumb-wrap img,
+.admin-product-thumb img,
+.list-product-thumb img,
+.product-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.admin-main-button.with-thumb {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+}
+.admin-product-copy { min-width: 0; }
+.item-product-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.item-product-copy { min-width: 0; flex: 1; }
+.image-upload-card {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #e0e5e2;
+  border-radius: 14px;
+  background: #fafbfa;
+}
+.product-image-preview {
+  width: 100%;
+  height: 150px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: #f0f2f0;
+  border: 1px dashed #cbd2ce;
+  display: grid;
+  place-items: center;
+  color: #7b837f;
+  margin: 7px 0 9px;
+}
+.product-image-preview-empty {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  text-align: center;
+  padding: 15px;
+  font-size: 12px;
+}
+.product-image-preview-empty .camera-icon { font-size: 29px; }
+.product-image-file {
+  padding: 7px;
+  font-size: 13px;
+  background: white;
+}
+.product-image-file::file-selector-button {
+  border: 0;
+  border-radius: 9px;
+  background: #edf4ff;
+  color: #1d65b8;
+  padding: 8px 10px;
+  margin-right: 8px;
+  font-weight: 700;
+}
+.remove-image-btn {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: #f4eeee;
+  color: #87423e;
+  padding: 9px 10px;
+  margin-top: 7px;
+  font-weight: 700;
+}
+.photo-status {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+@media (max-width: 390px) {
+  .product-thumb-wrap { width: 42px; height: 42px; }
+  .list-product-thumb { width: 40px; height: 40px; }
+}
+
+/* v24 – Produktbilder antippen und vergrössern */
+.product-thumb-wrap img,
+.admin-product-thumb img,
+.list-product-thumb img,
+.product-image-preview img {
+  cursor: zoom-in;
+}
+.product-image-dialog {
+  max-width: min(94vw, 980px);
+  width: auto;
+  padding: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+.product-image-dialog::backdrop {
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(4px);
+}
+.product-image-viewer {
+  position: relative;
+  display: grid;
+  place-items: center;
+  max-width: 94vw;
+  max-height: 88vh;
+}
+.product-image-viewer img {
+  display: block;
+  max-width: 94vw;
+  max-height: 88vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 18px 70px rgba(0,0,0,.38);
+}
+.product-image-viewer-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.94);
+  color: #111;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  box-shadow: 0 3px 14px rgba(0,0,0,.2);
+}
+
+</style>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Gemeinsam einkaufen · v28</div>
+        <h1>Familien Einkauf</h1>
+      </div>
+      <button id="profileBtn" class="profile-pill">👤 Profil</button>
+    </header>
+
+    <main>
+      <nav class="list-switcher" aria-label="Liste auswählen">
+        <button id="sharedModeBtn" class="mode-btn active" type="button">👨‍👩‍👧‍👦 Gemeinsam</button>
+        <button id="weeklyModeBtn" class="mode-btn" type="button">🧾 Mein Wocheneinkauf</button>
+      </nav>
+
+      <section class="list-section list-card">
+        <div class="section-title-row sticky-title">
+          <div class="list-heading-row">
+            <h2 id="listTitle">🛒 Einkaufsliste</h2>
+            <span id="openCount" class="open-count-badge">0 offen</span>
+          </div>
+          <button id="refreshBtn" class="icon-btn" aria-label="Aktualisieren">↻</button>
+        </div>
+<div class="list-toolbar">
+          <div id="syncState" class="sync-state">Verbindung wird geprüft …</div>
+          <div class="list-toolbar-actions">
+            <button id="resetWeeklyBtn" class="small-action-btn reset-only hidden" type="button">↺ Häkchen zurücksetzen</button>
+            <button id="clearPurchasedBtn" class="small-action-btn">Gekaufte ausblenden</button>
+          </div>
+        </div>
+
+        <div id="shoppingList"></div>
+      </section>
+
+      <section class="add-card add-card-color">
+        <div class="section-title-row">
+          <h2 id="addSectionTitle">➕ Einkaufsliste ergänzen</h2>
+          <div class="title-actions"><button id="manageCatalogBtn" class="text-btn">🗂 Kategorien</button></div>
+        </div>
+
+        <div id="catalogMode">
+          <label for="productSearch">🔎 Suchen</label>
+          <div class="search-row">
+            <input id="productSearch" class="red-search" type="search" placeholder="Produkt suchen oder sprechen …" autocomplete="off" />
+            <button id="speechBtn" class="speech-btn" type="button" aria-label="Spracheingabe starten">🎤</button>
+          </div>
+          <div id="speechHint" class="small-muted">Mit 🎤 kannst du den Suchtext mündlich eingeben.</div>
+
+          <details id="browseDetails" class="browse-details">
+            <summary>🗂 Nach Kategorie stöbern</summary>
+            <div class="browse-controls">
+              <label for="categorySelect">Kategorie</label>
+              <select id="categorySelect"></select>
+              <label for="subgroupSelect">Untergruppe</label>
+              <select id="subgroupSelect"></select>
+            </div>
+          </details>
+
+          <div id="productGrid" class="product-grid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="productImageDialog" class="product-image-dialog" aria-label="Produktfoto vergrössert">
+    <div class="product-image-viewer">
+      <button id="closeProductImageDialog" class="product-image-viewer-close" type="button" aria-label="Bild schliessen">×</button>
+      <img id="productImageLarge" alt="Produktfoto" />
+    </div>
+  </dialog>
+
+  <dialog id="profileDialog">
+    <form method="dialog" class="dialog-card">
+      <h2>Wer bist du?</h2>
+      <p>Die Auswahl wird auf diesem iPhone gespeichert.</p>
+      <div class="profile-grid" id="profileGrid"></div>
+      <button value="cancel" class="ghost-btn full">Schliessen</button>
+    </form>
+  </dialog>
+  <dialog id="catalogDialog">
+    <div class="dialog-card catalog-admin-card">
+      <div class="section-title-row">
+        <h2>🗂 Katalog verwalten</h2>
+        <button id="closeCatalogDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+
+      <div class="admin-note">
+        Produkte, Untergruppen und Kategorien können hier erstellt, umbenannt oder gelöscht werden. Produktfotos können hinzugefügt, ersetzt oder entfernt werden.
+        Änderungen gelten für alle Familienmitglieder.
+      </div>
+
+      <details class="admin-section" open>
+        <summary>📦 Produkte bearbeiten</summary>
+        <div class="admin-section-body">
+          <label for="manageProductSearch">Produkt suchen</label>
+          <input id="manageProductSearch" type="search" placeholder="z. B. Milch" autocomplete="off" />
+          <div id="manageProductResults" class="admin-list"></div>
+        </div>
+      </details>
+
+      <details class="admin-section">
+        <summary>🗂 Kategorien & Untergruppen</summary>
+        <div class="admin-section-body">
+          <div class="manage-block compact-manage">
+            <label for="newCategoryName">Neue Kategorie</label>
+            <div class="admin-inline">
+              <input id="newCategoryName" type="text" placeholder="z. B. Garten" />
+              <button id="addCategoryBtn" class="small-primary-btn" type="button">＋</button>
+            </div>
+          </div>
+
+          <div class="manage-block compact-manage">
+            <label for="manageCategorySelect">Neue Untergruppe erstellen in</label>
+            <select id="manageCategorySelect"></select>
+            <label for="newSubgroupName">Name der Untergruppe</label>
+            <div class="admin-inline">
+              <input id="newSubgroupName" type="text" placeholder="z. B. Pflanzenpflege" />
+              <button id="addSubgroupBtn" class="small-primary-btn" type="button">＋</button>
+            </div>
+          </div>
+
+          <h3 class="mini-heading">Vorhandene Kategorien</h3>
+          <div id="customGroupList" class="admin-list"></div>
+          <div id="manageSubgroupHint" class="hidden"></div>
+        </div>
+      </details>
+    </div>
+  </dialog>
+
+  <dialog id="editProductDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>✏️ Produkt bearbeiten</h2>
+        <button id="closeEditProductDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+
+      <input id="editProductId" type="hidden" />
+
+      <label for="editProductName">Produktname</label>
+      <input id="editProductName" type="text" autocomplete="off" />
+
+      <label for="editProductCategory">Kategorie</label>
+      <select id="editProductCategory"></select>
+
+      <label for="editProductSubgroup">Untergruppe</label>
+      <select id="editProductSubgroup"></select>
+
+      <label for="editProductDefaultUnit">Standard-Masseinheit</label>
+      <select id="editProductDefaultUnit"></select>
+      <div class="small-muted">Diese Einheit wird beim Hinzufügen vorgeschlagen und kann jedes Mal geändert werden.</div>
+
+      <div class="image-upload-card">
+        <label for="editProductImageInput">Produktfoto</label>
+        <div class="product-image-preview">
+          <img id="editProductImagePreview" class="hidden" alt="Produktfoto Vorschau" />
+          <div id="editProductImageEmpty" class="product-image-preview-empty"><span class="camera-icon">📷</span><span>Noch kein Foto hinterlegt</span></div>
+        </div>
+        <input id="editProductImageInput" class="product-image-file" type="file" accept="image/*" />
+        <button id="removeEditedProductImageBtn" class="remove-image-btn hidden" type="button">Foto entfernen</button>
+        <div class="photo-status">Das Foto wird für alle Familienmitglieder gespeichert.</div>
+      </div>
+
+      <button id="saveEditedProductBtn" class="primary-btn" type="button">Änderungen speichern</button>
+      <button id="deleteEditedProductBtn" class="danger-btn full" type="button">🗑 Produkt löschen</button>
+    </div>
+  </dialog>
+
+  <dialog id="quantityDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2 id="quantityDialogTitle">Menge angeben</h2>
+        <button id="closeQuantityDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+
+      <p id="quantityProductLabel" class="item-name"></p>
+
+      <div class="quantity-input-grid">
+        <div>
+          <label for="quantityValue">Menge</label>
+          <input id="quantityValue" type="text" inputmode="decimal" autocomplete="off" placeholder="optional" />
+        </div>
+        <div>
+          <label for="quantityUnit">Masseinheit</label>
+          <select id="quantityUnit"></select>
+        </div>
+      </div>
+      <div class="small-muted">Die vorgeschlagene Einheit kannst du für diesen Einkauf anpassen.</div>
+
+      <button id="saveQuantityBtn" class="primary-btn" type="button">Auf Liste setzen</button>
+      <button id="cancelQuantityBtn" class="ghost-btn full dialog-secondary" type="button">Abbrechen</button>
+    </div>
+  </dialog>
+  <dialog id="newProductDialog">
+    <div class="dialog-card">
+      <div class="section-title-row">
+        <h2>Produkt aufnehmen?</h2>
+        <button id="closeNewProductDialog" class="icon-btn" type="button" aria-label="Schliessen">×</button>
+      </div>
+
+      <p><strong id="newProductNameLabel"></strong> wurde nicht gefunden. Soll dieses Produkt in die gemeinsame Datenbank aufgenommen werden?</p>
+
+      <div class="selection-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <label for="newProductCategory">Kategorie auswählen</label>
+          <select id="newProductCategory"></select>
+
+          <div id="newCategoryInline" class="inline-create hidden">
+            <label for="newProductCategoryName">Neue Kategorie</label>
+            <input id="newProductCategoryName" type="text" placeholder="z. B. Tierbedarf" autocomplete="off" />
+            <div class="small-muted">Die neue Kategorie wird beim Speichern für alle erstellt.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newProductSubgroupStep" class="selection-step hidden">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <label for="newProductSubgroup">Untergruppe auswählen</label>
+          <select id="newProductSubgroup"></select>
+
+          <div id="newSubgroupInline" class="inline-create hidden">
+            <label for="newProductSubgroupName">Neue Untergruppe</label>
+            <input id="newProductSubgroupName" type="text" placeholder="z. B. Katzenfutter" autocomplete="off" />
+            <div class="small-muted">Die neue Untergruppe wird beim Speichern für alle erstellt.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="selection-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <label>Menge und vorgeschlagene Masseinheit</label>
+          <div class="quantity-input-grid">
+            <div>
+              <label for="newProductQuantity">Menge</label>
+              <input id="newProductQuantity" type="text" inputmode="decimal" autocomplete="off" placeholder="optional" />
+            </div>
+            <div>
+              <label for="newProductDefaultUnit">Masseinheit</label>
+              <select id="newProductDefaultUnit"></select>
+            </div>
+          </div>
+          <div class="small-muted">Die App schlägt eine Einheit vor. Du kannst sie hier anpassen. Sie wird zugleich als Standard für dieses Produkt gespeichert.</div>
+        </div>
+      </div>
+
+      <div class="selection-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <label for="newProductImageInput">Produktfoto <span class="small-muted">(optional)</span></label>
+          <div class="product-image-preview">
+            <img id="newProductImagePreview" class="hidden" alt="Produktfoto Vorschau" />
+            <div id="newProductImageEmpty" class="product-image-preview-empty"><span class="camera-icon">📷</span><span>Foto auswählen oder direkt mit dem iPhone aufnehmen</span></div>
+          </div>
+          <input id="newProductImageInput" class="product-image-file" type="file" accept="image/*" />
+          <button id="removeNewProductImageBtn" class="remove-image-btn hidden" type="button">Ausgewähltes Foto entfernen</button>
+          <div class="photo-status">Das Foto wird zentral gespeichert und ist danach auf allen Geräten sichtbar.</div>
+        </div>
+      </div>
+
+      <div id="newProductChoiceHint" class="small-muted choice-hint">Zuerst eine Kategorie auswählen.</div>
+
+      <button id="saveNewProductBtn" class="primary-btn" type="button" disabled>In Datenbank aufnehmen & auf Liste setzen</button>
+      <button id="cancelNewProductBtn" class="ghost-btn full dialog-secondary" type="button">Abbrechen</button>
+    </div>
+  </dialog>
+
+  <script>
+window.PRODUCT_CATALOG = {
+  "Lebensmittel": {
+    "Obst": ["Äpfel","Bananen","Birnen","Orangen","Mandarinen","Zitronen","Limetten","Trauben","Erdbeeren","Himbeeren","Heidelbeeren","Pfirsiche","Nektarinen","Aprikosen","Kiwis","Mango","Ananas","Melone","Wassermelone","Avocado"],
+    "Gemüse": ["Tomaten","Cherry-Tomaten","Gurken","Peperoni","Karotten","Kartoffeln","Süsskartoffeln","Zwiebeln","Knoblauch","Broccoli","Blumenkohl","Zucchetti","Aubergine","Lauch","Sellerie","Spinat","Salat","Rucola","Champignons","Mais"],
+    "Brot & Backwaren": ["Brot","Toastbrot","Zopf","Brötchen","Gipfeli","Tortillas","Knäckebrot","Reiswaffeln","Mehl","Backpulver","Hefe","Paniermehl"],
+    "Milchprodukte & Eier": ["Milch","Haferdrink","Mandelmilch","Butter","Margarine","Naturjoghurt","Fruchtjoghurt","Skyr","Quark","Rahm","Crème fraîche","Mozzarella","Parmesan","Gouda","Emmentaler","Frischkäse","Eier"],
+    "Fleisch & Fisch": ["Pouletbrust","Pouletschenkel","Rindshackfleisch","Rindssteak","Schweinefleisch","Kalbfleisch","Speck","Schinken","Salami","Bratwürste","Cervelat","Lachs","Thunfisch","Crevetten","Fischstäbchen"],
+    "Vegetarisch & Vegan": ["Tofu","Tempeh","Vegiburger","Falafel","Hummus","Veganes Hack","Vegane Nuggets","Kichererbsen","Linsen","Kidneybohnen","Weisse Bohnen"],
+    "Teigwaren, Reis & Beilagen": ["Spaghetti","Penne","Fusilli","Lasagneblätter","Ravioli","Tortellini","Reis","Risottoreis","Couscous","Bulgur","Quinoa","Polenta","Gnocchi"],
+    "Vorrat & Konserven": ["Tomatensauce","Pelati","Tomatenpüree","Kokosmilch","Bouillon","Maisdose","Thunfischdose","Apfelmus","Essiggurken","Oliven","Kapern","Pesto","Mayonnaise","Ketchup","Senf","Sojasauce","Balsamico","Essig","Olivenöl","Sonnenblumenöl"],
+    "Frühstück": ["Haferflocken","Müesli","Cornflakes","Granola","Konfitüre","Honig","Nutella","Erdnussbutter","Ahornsirup","Kakaopulver"],
+    "Snacks & Süsses": ["Chips","Popcorn","Nüsse","Mandeln","Cashews","Cracker","Schokolade","Gummibärchen","Kekse","Riegel","Glace","Pudding"],
+    "Tiefkühl": ["TK-Gemüse","TK-Beeren","Pommes frites","Pizza","Lasagne","Glace","Fischstäbchen","Chicken Nuggets","TK-Kräuter"],
+    "Gewürze & Backen": ["Salz","Pfeffer","Paprika","Curry","Chili","Oregano","Basilikum","Zimt","Vanillezucker","Zucker","Rohrzucker","Puderzucker","Maizena","Kakao","Schokoladenwürfel"]
+  },
+  "Getränke": {
+    "Wasser": ["Mineralwasser still","Mineralwasser mit Kohlensäure"],
+    "Softdrinks": ["Cola","Cola Zero","Citro","Eistee","Rivella","Orangina","Tonic Water","Ginger Ale"],
+    "Säfte": ["Orangensaft","Apfelsaft","Multivitaminsaft","Ananassaft"],
+    "Kaffee & Tee": ["Kaffeebohnen","Kaffeekapseln","Filterkaffee","Schwarztee","Grüntee","Pfefferminztee","Kamillentee"],
+    "Sonstiges": ["Sirup","Energy Drink","Isotonisches Getränk"]
+  },
+  "Hygiene": {
+    "Zahnpflege": ["Zahnpasta","Zahnbürsten","Zahnseide","Interdentalbürsten","Mundspülung"],
+    "Dusche & Haare": ["Duschgel","Shampoo","Conditioner","Trockenshampoo","Haargel","Haarspray","Rasiergel"],
+    "Körperpflege": ["Deodorant","Bodylotion","Handcreme","Gesichtscreme","Lippenpflege","Sonnencreme","Wattestäbchen","Wattepads"],
+    "Rasur": ["Rasierklingen","Einwegrasierer","Rasierschaum","Aftershave"],
+    "Papier & Monatshygiene": ["Toilettenpapier","Taschentücher","Feuchttücher","Tampons","Binden","Slipeinlagen"],
+    "Apotheke": ["Pflaster","Desinfektionsmittel","Verbandsmaterial","Fieberthermometer-Batterie"]
+  },
+  "Haushalt": {
+    "Reinigung Küche": ["Abwaschmittel","Spülmaschinen-Tabs","Klarspüler","Spülmaschinensalz","Küchenschwämme","Abwaschbürste","Küchenreiniger","Entkalker"],
+    "Reinigung Haus": ["Allzweckreiniger","Badreiniger","WC-Reiniger","Glasreiniger","Bodenreiniger","Scheuermittel","Mikrofasertücher","Putzschwämme","Gummihandschuhe"],
+    "Waschen": ["Waschmittel Color","Waschmittel Weiss","Feinwaschmittel","Weichspüler","Fleckentferner","Wäschenetz"],
+    "Papier & Abfall": ["Haushaltpapier","Backpapier","Alufolie","Frischhaltefolie","Gefrierbeutel","Kehrichtsäcke","Kompostsäcke","Zip-Beutel"],
+    "Küche": ["Kaffeefilter","Servietten","Streichhölzer","Feuerzeug","Kerzen","Zahnstocher"],
+    "Tierbedarf": ["Tierfutter","Katzenstreu","Hundebeutel"]
+  },
+  "Batterien & Elektro": {
+    "Batterien": ["AA-Batterien","AAA-Batterien","C-Batterien","D-Batterien","9V-Batterie","CR2032 Knopfzelle","CR2025 Knopfzelle","CR2016 Knopfzelle","LR44 Knopfzelle"],
+    "Licht": ["LED-Lampe E27","LED-Lampe E14","LED-Spot GU10","Nachtlicht"],
+    "Kabel & Zubehör": ["USB-C Kabel","Lightning-Kabel","USB-A Kabel","Mehrfachstecker","Verlängerungskabel","Klebeband","Isolierband"]
+  },
+  "Sonstiges": {
+    "Büro & Schule": ["Druckerpapier","Kugelschreiber","Bleistifte","Textmarker","Notizblock","Briefumschläge","Klebestift"],
+    "Freizeit": ["Grillkohle","Anzündwürfel","Picknickbecher","Pappteller","Servietten","Müllbeutel"],
+    "Auto": ["Scheibenreiniger","Enteiser","Motoröl","Papiertaschentücher Auto"]
+  }
+};
+
+
+const PEOPLE = ["Leon", "Papi", "Mami", "Anouk"];
+const config = Object.freeze({
+  SUPABASE_URL: "https://kfpxheegmeupnuzqjqqt.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_vlP2dIHDTK-VY5LK-jeS_w_tN04WaK0",
+  HOUSEHOLD_ID: "leon-papi-mami-anouk"
+});
+
+function validConfig(candidate) {
+  return Boolean(
+    candidate &&
+    typeof candidate.SUPABASE_URL === "string" &&
+    candidate.SUPABASE_URL.startsWith("https://") &&
+    typeof candidate.SUPABASE_ANON_KEY === "string" &&
+    candidate.SUPABASE_ANON_KEY.startsWith("sb_publishable_")
+  );
+}
+
+class RestQuery {
+  constructor(client, table) {
+    this.client = client;
+    this.table = table;
+    this.method = "GET";
+    this.body = null;
+    this.selectColumns = null;
+    this.filters = [];
+    this.orders = [];
+  }
+
+  select(columns = "*") {
+    this.method = "GET";
+    this.selectColumns = columns;
+    return this;
+  }
+
+  insert(payload) {
+    this.method = "POST";
+    this.body = payload;
+    return this;
+  }
+
+  update(payload) {
+    this.method = "PATCH";
+    this.body = payload;
+    return this;
+  }
+
+  delete() {
+    this.method = "DELETE";
+    return this;
+  }
+
+  eq(column, value) {
+    this.filters.push([column, value]);
+    return this;
+  }
+
+  order(column, options = {}) {
+    this.orders.push([column, options.ascending !== false ? "asc" : "desc"]);
+    return this;
+  }
+
+  then(resolve, reject) {
+    return this.execute().then(resolve, reject);
+  }
+
+  async execute() {
+    const url = new URL(`${this.client.url}/rest/v1/${encodeURIComponent(this.table)}`);
+
+    if (this.method === "GET") {
+      url.searchParams.set("select", this.selectColumns || "*");
+    }
+
+    for (const [column, value] of this.filters) {
+      let encoded;
+      if (value === null) encoded = "null";
+      else if (typeof value === "boolean") encoded = value ? "true" : "false";
+      else encoded = String(value);
+      url.searchParams.append(column, `eq.${encoded}`);
+    }
+
+    if (this.orders.length) {
+      url.searchParams.set(
+        "order",
+        this.orders.map(([column, direction]) => `${column}.${direction}`).join(",")
+      );
+    }
+
+    const headers = {
+      "apikey": this.client.key,
+      "Accept": "application/json"
+    };
+
+    const options = {
+      method: this.method,
+      headers,
+      cache: "no-store"
+    };
+
+    if (this.method !== "GET") {
+      headers["Content-Type"] = "application/json";
+      headers["Prefer"] = "return=minimal";
+      if (this.body !== null) options.body = JSON.stringify(this.body);
+    }
+
+    try {
+      const response = await fetch(url.toString(), options);
+      const text = await response.text();
+
+      let payload = null;
+      if (text) {
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = text;
+        }
+      }
+
+      if (!response.ok) {
+        const message =
+          (payload && typeof payload === "object" && (payload.message || payload.error_description || payload.error)) ||
+          (typeof payload === "string" && payload) ||
+          `HTTP ${response.status}`;
+
+        return {
+          data: null,
+          error: {
+            message: String(message),
+            status: response.status,
+            details: payload
+          }
+        };
+      }
+
+      return {
+        data: this.method === "GET" ? (payload || []) : payload,
+        error: null
+      };
+    } catch (err) {
+      return {
+        data: null,
+        error: {
+          message: err?.message || "Netzwerkfehler",
+          details: err
+        }
+      };
+    }
+  }
+}
+
+class RestClient {
+  constructor(url, key) {
+    this.url = String(url || "").replace(/\/+$/, "");
+    this.key = key;
+  }
+
+  from(table) {
+    return new RestQuery(this, table);
+  }
+}
+
+function createDatabaseClient(url, key) {
+  return new RestClient(url, key);
+}
+let db = null;
+let currentPerson = localStorage.getItem("family-shop-person") || "";
+let items = [];
+let weeklyItems = [];
+let activeListMode = localStorage.getItem("family-shop-list-mode") || "shared";
+let customGroups = [];
+let cloudProducts = [];
+let pendingNewProductName = "";
+let pendingQuantityProduct = null;
+let pendingQuantityEdit = null;
+let newProductUnitTouched = false;
+let newProductImageFile = null;
+let newProductPreviewObjectUrl = "";
+let editProductImageFile = null;
+let editProductPreviewObjectUrl = "";
+let editProductRemoveImage = false;
+let editProductCurrentImagePath = "";
+let hidePurchased = false;
+let speechRecognition = null;
+let speechListening = false;
+
+const UNIT_OPTIONS = ["Stück", "g", "kg", "ml", "l", "Packung", "Beutel", "Flasche", "Dose", "Glas", "Rolle", "Tube", "Schachtel", "Bund", "Paar"];
+
+const $ = (id) => document.getElementById(id);
+
+
+async function cleanupOldAppCaches() {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+  } catch (_) {}
+
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (_) {}
+}
+
+function configured() {
+  return validConfig(config);
+}
+
+
+const PRODUCT_IMAGE_BUCKET = "product-images";
+
+function encodedStoragePath(path = "") {
+  return String(path).split("/").filter(Boolean).map(encodeURIComponent).join("/");
+}
+
+function productImageUrlFromPath(path = "") {
+  if (!path) return "";
+  return `${config.SUPABASE_URL}/storage/v1/object/public/${PRODUCT_IMAGE_BUCKET}/${encodedStoragePath(path)}`;
+}
+
+function catalogProductImageUrl(product) {
+  return productImageUrlFromPath(product?.image_path || product?.imagePath || "");
+}
+
+function catalogProductForItem(item) {
+  if (!item) return null;
+  const n = normalizeProductName(item.product_name || item.name);
+  const c = normalizeProductName(item.category);
+  const sg = normalizeProductName(item.subcategory || item.subgroup);
+  return cloudProducts.find(p =>
+    normalizeProductName(p.product_name) === n &&
+    (!c || normalizeProductName(p.category) === c) &&
+    (!sg || normalizeProductName(p.subcategory) === sg)
+  ) || cloudProducts.find(p => normalizeProductName(p.product_name) === n) || null;
+}
+
+function productThumbHtml(product, className = "product-thumb-wrap", fallback = "📦") {
+  const url = catalogProductImageUrl(product);
+  if (!url) return `<span class="${className}" aria-hidden="true">${fallback}</span>`;
+  return `<span class="${className}"><img src="${escapeAttr(url)}" alt="" loading="lazy" /></span>`;
+}
+
+function revokePreviewObjectUrl(kind) {
+  const key = kind === "new" ? "newProductPreviewObjectUrl" : "editProductPreviewObjectUrl";
+  const value = kind === "new" ? newProductPreviewObjectUrl : editProductPreviewObjectUrl;
+  if (value) URL.revokeObjectURL(value);
+  if (kind === "new") newProductPreviewObjectUrl = "";
+  else editProductPreviewObjectUrl = "";
+}
+
+function setProductImagePreview(kind, source = "") {
+  const isNew = kind === "new";
+  const img = $(isNew ? "newProductImagePreview" : "editProductImagePreview");
+  const empty = $(isNew ? "newProductImageEmpty" : "editProductImageEmpty");
+  if (!img || !empty) return;
+  if (source) {
+    img.src = source;
+    img.classList.remove("hidden");
+    empty.classList.add("hidden");
+  } else {
+    img.removeAttribute("src");
+    img.classList.add("hidden");
+    empty.classList.remove("hidden");
+  }
+}
+
+function setLocalImageFile(kind, file) {
+  revokePreviewObjectUrl(kind);
+  if (kind === "new") newProductImageFile = file || null;
+  else editProductImageFile = file || null;
+
+  const removeBtn = $(kind === "new" ? "removeNewProductImageBtn" : "removeEditedProductImageBtn");
+  if (!file) {
+    if (removeBtn && kind === "new") removeBtn.classList.add("hidden");
+    return;
+  }
+  const objectUrl = URL.createObjectURL(file);
+  if (kind === "new") newProductPreviewObjectUrl = objectUrl;
+  else editProductPreviewObjectUrl = objectUrl;
+  setProductImagePreview(kind, objectUrl);
+  if (removeBtn) removeBtn.classList.remove("hidden");
+}
+
+async function compressProductImage(file) {
+  if (!file || !String(file.type || "").startsWith("image/")) throw new Error("Bitte eine Bilddatei auswählen");
+  if (file.size > 20 * 1024 * 1024) throw new Error("Das Foto ist zu gross. Maximal 20 MB auswählen.");
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Das Foto konnte nicht gelesen werden"));
+      img.src = sourceUrl;
+    });
+
+    const maxSide = 1200;
+    const width = image.naturalWidth || image.width;
+    const height = image.naturalHeight || image.height;
+    const scale = Math.min(1, maxSide / Math.max(width, height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob) throw new Error("Das Foto konnte nicht verarbeitet werden");
+    return blob;
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
+async function uploadStorageObject(path, blob) {
+  const response = await fetch(`${config.SUPABASE_URL}/storage/v1/object/${PRODUCT_IMAGE_BUCKET}/${encodedStoragePath(path)}`, {
+    method: "POST",
+    headers: {
+      "apikey": config.SUPABASE_ANON_KEY,
+      "Content-Type": "image/jpeg",
+      "x-upsert": "false"
+    },
+    body: blob
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || `Foto-Upload fehlgeschlagen (${response.status})`);
+  }
+}
+
+async function deleteStorageObject(path) {
+  if (!path) return true;
+  try {
+    const response = await fetch(`${config.SUPABASE_URL}/storage/v1/object/${PRODUCT_IMAGE_BUCKET}/${encodedStoragePath(path)}`, {
+      method: "DELETE",
+      headers: {
+        "apikey": config.SUPABASE_ANON_KEY
+      }
+    });
+    return response.ok || response.status === 404;
+  } catch (err) {
+    console.warn("Produktfoto konnte nicht aus Storage gelöscht werden", err);
+    return false;
+  }
+}
+
+async function saveCatalogProductImage(product, file, oldPath = "") {
+  if (!product?.id || !file) return false;
+  let newPath = "";
+  try {
+    const blob = await compressProductImage(file);
+    newPath = `${config.HOUSEHOLD_ID}/product-${product.id}-${Date.now()}.jpg`;
+    await uploadStorageObject(newPath, blob);
+
+    const { error } = await db.from("catalog_products")
+      .update({ image_path: newPath })
+      .eq("id", product.id);
+    if (error) {
+      await deleteStorageObject(newPath);
+      if (/image_path|column/i.test(String(error.message || ""))) throw new Error("Bitte zuerst die v23-Supabase-Datei ausführen");
+      throw new Error(error.message || "Foto konnte nicht gespeichert werden");
+    }
+
+    if (oldPath && oldPath !== newPath) await deleteStorageObject(oldPath);
+    return true;
+  } catch (err) {
+    console.warn(err);
+    toast(err?.message?.includes("v23-Supabase") ? err.message : "Foto konnte nicht gespeichert werden. Bitte v23-Supabase prüfen.");
+    return false;
+  }
+}
+
+async function removeCatalogProductImage(product) {
+  if (!product?.id) return false;
+  const oldPath = product.image_path || "";
+  const { error } = await db.from("catalog_products")
+    .update({ image_path: null })
+    .eq("id", product.id);
+  if (error) {
+    console.warn(error);
+    if (/image_path|column/i.test(String(error.message || ""))) toast("Bitte zuerst die v23-Supabase-Datei ausführen");
+    else toast("Foto konnte nicht entfernt werden");
+    return false;
+  }
+  if (oldPath) await deleteStorageObject(oldPath);
+  return true;
+}
+
+function fillUnitSelect(select, selected = "Stück") {
+  if (!select) return;
+  const wanted = UNIT_OPTIONS.includes(selected) ? selected : "Stück";
+  select.innerHTML = UNIT_OPTIONS.map(u => `<option value="${escapeAttr(u)}">${escapeHtml(u)}</option>`).join("");
+  select.value = wanted;
+}
+
+function parseQuantity(value) {
+  const normalized = String(value ?? "").trim().replace(",", ".");
+  if (!normalized) return null;
+  const number = Number(normalized);
+  return Number.isFinite(number) && number > 0 ? number : NaN;
+}
+
+function formatQuantity(value) {
+  if (value === null || value === undefined || value === "") return "";
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
+  return new Intl.NumberFormat("de-CH", { maximumFractionDigits: 2 }).format(number);
+}
+
+function quantityLabel(quantity, unit = "Stück") {
+  const formatted = formatQuantity(quantity);
+  return formatted ? `${formatted} ${unit}` : unit;
+}
+
+function suggestDefaultUnit(name = "", category = "", subgroup = "") {
+  const n = normalizeProductName(name);
+  const c = normalizeProductName(category);
+  const g = normalizeProductName(subgroup);
+
+  if (/toilettenpapier|taschentücher|feuchttücher|tampons|binden|slipeinlagen|batterien|briefumschläge|servietten|säcke|beutel|tabs|schwämme|wattepads|wattestäbchen|pflaster|verbandsmaterial/.test(n)) return "Packung";
+  if (/backpapier|alufolie|frischhaltefolie|haushaltpapier/.test(n)) return "Rolle";
+  if (/zahnpasta/.test(n)) return "Tube";
+  if (/pelati|kokosmilch|maisdose|thunfischdose|energy drink/.test(n)) return "Dose";
+  if (/apfelmus|essiggurken|oliven|kapern|pesto|mayonnaise|ketchup|senf/.test(n)) return "Glas";
+  if (/kartoff|süsskartoff|karotten|zwiebeln|tierfutter|katzenstreu|grillkohle/.test(n)) return "kg";
+  if (/milch$|haferdrink|mandelmilch|mineralwasser|cola|citro|eistee|rivella|orangina|tonic|ginger ale|saft|sirup|isoton|motoröl|scheibenreiniger/.test(n)) return "l";
+  if (/rahm|sauce|sojasauce|balsamico|essig|öl$|abwaschmittel|reiniger|klarspüler|entkalker|waschmittel|weichspüler|fleckentferner|shampoo|conditioner|duschgel|haargel|haarspray|rasiergel|deodorant|lotion|creme|sonnencreme|rasierschaum|aftershave|mundspülung|desinfektionsmittel|enteiser/.test(n)) return "ml";
+  if (/kaffeekapsel|eier|brötchen|gipfeli|cervelat|bratwürste|pouletschenkel|zahnbürste|zahnseide|feuerzeug|kerzen|kabel|stecker|lampe|spot|nachtlicht|kugelschreiber|bleistift|textmarker|notizblock|klebestift|rieg(el)?|pudding/.test(n)) return "Stück";
+
+  if (c === "getränke") {
+    if (/kaffee|bohnen|filter/.test(n)) return "g";
+    if (/tee/.test(n)) return "Packung";
+    return "l";
+  }
+  if (g === "fleisch & fisch" || g === "teigwaren, reis & beilagen" || g === "gewürze & backen" || g === "frühstück" || g === "snacks & süsses") return "g";
+  if (g === "milchprodukte & eier") return /ei(er)?/.test(n) ? "Stück" : "g";
+  if (g === "vegetarisch & vegan") return "g";
+  if (g === "tiefkühl") return "Packung";
+  if (g === "obst" || g === "gemüse") return "Stück";
+  if (c === "hygiene") return "Stück";
+  if (c === "haushalt" && (/reinigung|waschen/.test(g))) return "ml";
+  if (g === "tierbedarf") return "kg";
+  return "Stück";
+}
+
+function productDefaultUnit(product) {
+  const stored = product?.default_unit || product?.defaultUnit || "";
+  if (UNIT_OPTIONS.includes(stored)) return stored;
+  return suggestDefaultUnit(product?.product_name || product?.name, product?.category, product?.subcategory || product?.subgroup);
+}
+
+function openQuantityDialog(product, editItem = null) {
+  if (!currentPerson) return $("profileDialog").showModal();
+  if (!db) return toast("Cloud-Verbindung noch nicht bereit");
+
+  pendingQuantityProduct = product;
+  pendingQuantityEdit = editItem;
+
+  $("quantityDialogTitle").textContent = editItem ? "Menge bearbeiten" : "Menge angeben";
+  $("quantityProductLabel").textContent = product?.name || product?.product_name || editItem?.product_name || "Produkt";
+  $("quantityValue").value = editItem ? formatQuantity(editItem.quantity) : "";
+  fillUnitSelect($("quantityUnit"), editItem?.unit || productDefaultUnit(product));
+  $("saveQuantityBtn").textContent = editItem ? "Menge speichern" : "Auf Liste setzen";
+  $("quantityDialog").showModal();
+  setTimeout(() => $("quantityValue")?.select(), 0);
+}
+
+async function saveEditedQuantity() {
+  if (!pendingQuantityEdit) return;
+  const quantity = parseQuantity($("quantityValue").value);
+  const unit = $("quantityUnit").value;
+  if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
+
+  const table = activeListMode === "weekly" ? "weekly_shopping_items" : "shopping_items";
+  let query = db.from(table).update({ quantity, unit }).eq("id", pendingQuantityEdit.id);
+  if (activeListMode === "weekly") query = query.eq("owner", currentPerson);
+  const { error } = await query;
+  if (error) {
+    console.warn(error);
+    if (/quantity|unit|column/i.test(String(error.message || ""))) return toast("Bitte zuerst die v21-Supabase-Datei ausführen");
+    return toast("Menge konnte nicht gespeichert werden");
+  }
+
+  $("quantityDialog").close();
+  pendingQuantityEdit = null;
+  pendingQuantityProduct = null;
+  if (activeListMode === "weekly") await loadWeeklyItems();
+  else await loadItems();
+  toast("Menge gespeichert");
+}
+
+function currentActiveItems() {
+  return activeListMode === "weekly" ? weeklyItems : items;
+}
+
+function updateListModeUI() {
+  const weekly = activeListMode === "weekly";
+  $("sharedModeBtn").classList.toggle("active", !weekly);
+  $("weeklyModeBtn").classList.toggle("active", weekly);
+  $("listTitle").textContent = weekly
+    ? `🧾 ${currentPerson || "Meine"} Einkaufsliste`
+    : "🛒 Einkaufsliste";
+  $("addSectionTitle").textContent = weekly
+    ? "➕ Persönliche Liste ergänzen"
+    : "➕ Einkaufsliste ergänzen";
+  if ($("resetWeeklyBtn")) $("resetWeeklyBtn").classList.toggle("hidden", !weekly);
+  localStorage.setItem("family-shop-list-mode", activeListMode);
+  hidePurchased = false;
+  renderList();
+}
+
+async function switchListMode(mode) {
+  activeListMode = mode;
+  if (mode === "weekly" && db) await loadWeeklyItems();
+  updateListModeUI();
+  $("productSearch").value = "";
+  renderProducts();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function initProfile() {
+  $("profileGrid").innerHTML = PEOPLE.map(p => `<button type="button" class="profile-choice" data-person="${p}">${p}</button>`).join("");
+  $("profileGrid").addEventListener("click", async e => {
+    const btn = e.target.closest("[data-person]");
+    if (!btn) return;
+    currentPerson = btn.dataset.person;
+    localStorage.setItem("family-shop-person", currentPerson);
+    $("profileBtn").textContent = currentPerson;
+    $("profileDialog").close();
+    toast(`Profil: ${currentPerson}`);
+    if (db) await loadWeeklyItems();
+    updateListModeUI();
+  });
+  $("profileBtn").textContent = currentPerson || "Profil wählen";
+  $("profileBtn").onclick = () => $("profileDialog").showModal();
+  if (!currentPerson) $("profileDialog").showModal();
+}
+
+function getAllCategories() {
+  const categories = new Set();
+  for (const g of customGroups) if (g.category) categories.add(g.category);
+  for (const p of cloudProducts) if (p.category) categories.add(p.category);
+  return [...categories].sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function getSubgroups(category) {
+  const groups = new Set();
+  for (const g of customGroups) {
+    if (g.category === category && g.subcategory) groups.add(g.subcategory);
+  }
+  for (const p of cloudProducts) {
+    if (p.category === category && p.subcategory) groups.add(p.subcategory);
+  }
+  return [...groups].sort((a, b) => a.localeCompare(b, "de"));
+}
+
+function preserveSelectValue(select, options, fallback = "") {
+  const old = select.value;
+  select.innerHTML = options.join("");
+  if ([...select.options].some(o => o.value === old)) select.value = old;
+  else if (fallback && [...select.options].some(o => o.value === fallback)) select.value = fallback;
+}
+
+function buildCatalog() {
+  refreshCategorySelectors();
+  $("categorySelect").addEventListener("change", refreshSubgroups);
+  $("subgroupSelect").addEventListener("change", renderProducts);
+  $("productSearch").addEventListener("input", renderProducts);
+  $("browseDetails").addEventListener("toggle", renderProducts);
+
+  $("newProductCategory").addEventListener("change", handleNewProductCategoryChange);
+  $("newProductCategoryName").addEventListener("input", handleNewProductCategoryNameInput);
+  $("newProductSubgroup").addEventListener("change", handleNewProductSubgroupChange);
+  $("newProductSubgroupName").addEventListener("input", () => { updateSuggestedNewProductUnit(); updateNewProductSaveState(); });
+  $("newProductDefaultUnit").addEventListener("change", () => { newProductUnitTouched = true; });
+
+  $("sharedModeBtn").addEventListener("click", () => switchListMode("shared"));
+  $("weeklyModeBtn").addEventListener("click", () => switchListMode("weekly"));
+  $("resetWeeklyBtn")?.addEventListener("click", resetWeeklyChecks);
+
+  refreshSubgroups();
+  setupSpeechSearch();
+  updateListModeUI();
+}
+
+function refreshCategorySelectors() {
+  const categories = getAllCategories();
+  const options = categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`);
+  preserveSelectValue($("categorySelect"), options);
+  preserveSelectValue($("manageCategorySelect"), options);
+  refreshManageSubgroupList();
+}
+
+function refreshSubgroups() {
+  const cat = $("categorySelect").value;
+  const groups = getSubgroups(cat);
+  const options = [`<option value="__all">Alle Untergruppen</option>`, ...groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)];
+  preserveSelectValue($("subgroupSelect"), options, "__all");
+  renderProducts();
+}
+
+
+
+function setSpeechState(listening, hint = "") {
+  speechListening = listening;
+  const btn = $("speechBtn");
+  if (!btn) return;
+  btn.classList.toggle("listening", listening);
+  btn.textContent = listening ? "⏹" : "🎤";
+  btn.setAttribute("aria-label", listening ? "Spracheingabe stoppen" : "Spracheingabe starten");
+  $("speechHint").textContent = hint || (listening ? "Ich höre zu … sprich jetzt den Suchbegriff." : "Tipp: Mit 🎤 kannst du den Suchtext mündlich eingeben.");
+}
+
+function setupSpeechSearch() {
+  const btn = $("speechBtn");
+  if (!btn) return;
+  const SpeechApi = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechApi) {
+    btn.disabled = true;
+    $("speechHint").textContent = "Spracheingabe wird auf diesem Gerät/Browser leider nicht unterstützt.";
+    return;
+  }
+
+  speechRecognition = new SpeechApi();
+  speechRecognition.lang = "de-CH";
+  speechRecognition.interimResults = false;
+  speechRecognition.maxAlternatives = 1;
+  speechRecognition.continuous = false;
+
+  speechRecognition.onstart = () => setSpeechState(true);
+  speechRecognition.onend = () => setSpeechState(false);
+  speechRecognition.onerror = () => {
+    setSpeechState(false, "Spracheingabe konnte nicht gestartet werden. Bitte nochmals versuchen.");
+  };
+  speechRecognition.onresult = (event) => {
+    const text = event.results?.[0]?.[0]?.transcript?.trim() || "";
+    if (text) {
+      $("productSearch").value = text;
+      renderProducts();
+      setSpeechState(false, `Gesucht nach: ${text}`);
+      toast(`Suche: ${text}`);
+    }
+  };
+
+  btn.onclick = () => {
+    try {
+      if (speechListening) speechRecognition.stop();
+      else speechRecognition.start();
+    } catch (err) {
+      setSpeechState(false, "Spracheingabe konnte nicht gestartet werden. Bitte nochmals versuchen.");
+    }
+  };
+}
+
+
+function allCatalogProducts() {
+  return cloudProducts.map(p => ({
+    id: p.id,
+    name: p.product_name,
+    category: p.category,
+    subgroup: p.subcategory,
+    defaultUnit: productDefaultUnit(p),
+    imagePath: p.image_path || "",
+    source: "cloud"
+  }));
+}
+
+function normalizeProductName(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").toLocaleLowerCase("de-CH");
+}
+
+// v22 – Suchtreffer sinnvoll ordnen:
+// 1. Produktname beginnt mit Suchtext
+// 2. ein Wort im Produktnamen beginnt mit Suchtext
+// 3. Produktname enthält Suchtext
+// 4. Treffer nur in Kategorie/Untergruppe
+function productSearchRank(name, category, subgroup, query) {
+  const q = normalizeProductName(query);
+  if (!q) return 0;
+  const n = normalizeProductName(name);
+  const c = normalizeProductName(category);
+  const sg = normalizeProductName(subgroup);
+
+  if (n === q) return 0;
+  if (n.startsWith(q)) return 1;
+  if (n.split(/[^\p{L}\p{N}]+/u).some(word => word.startsWith(q))) return 2;
+  if (n.includes(q)) return 3;
+  if (c.includes(q) || sg.includes(q)) return 4;
+  return 99;
+}
+
+function renderProducts() {
+  const selectedCategory = $("categorySelect").value;
+  const selectedSubgroup = $("subgroupSelect").value;
+  const rawQuery = $("productSearch").value.trim().replace(/\s+/g, " ");
+  const q = rawQuery.toLocaleLowerCase("de-CH");
+  const all = allCatalogProducts();
+  const browsing = Boolean($("browseDetails")?.open);
+  let products = [];
+
+  // 1) Suche: immer über den gesamten Katalog.
+  if (q) {
+    products = all.filter(p => {
+      const haystack = `${p.name} ${p.category} ${p.subgroup}`.toLocaleLowerCase("de-CH");
+      return haystack.includes(q);
+    });
+  }
+  // 2) Stöbern: Vorschläge erst anzeigen, wenn «Nach Kategorie stöbern»
+  //    vom User bewusst geöffnet wurde.
+  else if (browsing) {
+    products = all.filter(p => {
+      if (p.category !== selectedCategory) return false;
+      if (selectedSubgroup !== "__all" && p.subgroup !== selectedSubgroup) return false;
+      return true;
+    });
+  }
+  // 3) Weder Suche noch Stöbern: keine Vorschläge anzeigen.
+  else {
+    $("productGrid").innerHTML = "";
+    return;
+  }
+
+  products.sort((a, b) => {
+    if (q) {
+      const rankDiff = productSearchRank(a.name, a.category, a.subgroup, q) -
+        productSearchRank(b.name, b.category, b.subgroup, q);
+      if (rankDiff) return rankDiff;
+    }
+    return a.name.localeCompare(b.name, "de-CH", { sensitivity: "base" });
+  });
+
+  const exactExists = q && all.some(p => normalizeProductName(p.name) === normalizeProductName(rawQuery));
+
+  const productButtons = products.map(p =>
+    `<button class="product-btn" data-name="${escapeAttr(p.name)}" data-category="${escapeAttr(p.category)}" data-subgroup="${escapeAttr(p.subgroup)}" data-unit="${escapeAttr(p.defaultUnit)}">
+      ${productThumbHtml(p)}
+      <span class="product-btn-copy">
+        <span class="product-btn-name">➕ ${escapeHtml(p.name)}</span>
+        ${q ? `<span class="product-btn-meta">${escapeHtml(p.category)} · ${escapeHtml(p.subgroup)} · Standard: ${escapeHtml(p.defaultUnit)}</span>` : ""}
+      </span>
+    </button>`
+  ).join("");
+
+  const addNewOption = q && rawQuery.length >= 2 && !exactExists
+    ? `<div class="new-product-suggestion">
+        <div class="new-product-copy">
+          <strong>„${escapeHtml(rawQuery)}“ noch nicht vorhanden?</strong>
+          <span>Nicht gefunden? In die gemeinsame Datenbank aufnehmen und Kategorie sowie Untergruppe festlegen.</span>
+        </div>
+        <button class="primary-btn compact-btn" id="offerNewProductBtn" type="button">➕ In Datenbank aufnehmen</button>
+      </div>`
+    : "";
+
+  if (!products.length && !addNewOption) {
+    $("productGrid").innerHTML = q
+      ? `<div class="catalog-empty">Kein Produkt gefunden.</div>`
+      : `<div class="catalog-empty">In dieser Auswahl sind keine Produkte vorhanden.</div>`;
+  } else {
+    $("productGrid").innerHTML = productButtons + addNewOption;
+  }
+}
+
+$("productGrid").addEventListener("click", e => {
+  const addNewBtn = e.target.closest("#offerNewProductBtn");
+  if (addNewBtn) {
+    openNewProductDialog($("productSearch").value.trim());
+    return;
+  }
+
+  const b = e.target.closest(".product-btn");
+  if (!b) return;
+  openQuantityDialog({
+    name: b.dataset.name,
+    category: b.dataset.category || $("categorySelect").value,
+    subgroup: b.dataset.subgroup,
+    defaultUnit: b.dataset.unit || "Stück"
+  });
+});
+
+
+
+function openNewProductDialog(name) {
+  if (!currentPerson) return $("profileDialog").showModal();
+  if (!db) return toast("Cloud-Verbindung noch nicht bereit");
+
+  const cleanName = String(name || "").trim().replace(/\s+/g, " ");
+  if (!cleanName) return;
+
+  pendingNewProductName = cleanName;
+  newProductUnitTouched = false;
+  $("newProductNameLabel").textContent = cleanName;
+  $("newProductQuantity").value = "";
+  fillUnitSelect($("newProductDefaultUnit"), suggestDefaultUnit(cleanName));
+  revokePreviewObjectUrl("new");
+  newProductImageFile = null;
+  $("newProductImageInput").value = "";
+  $("removeNewProductImageBtn").classList.add("hidden");
+  setProductImagePreview("new", "");
+
+  // Schritt 1: Kategorie
+  const categories = getAllCategories();
+  $("newProductCategory").innerHTML = [
+    `<option value="">Kategorie auswählen …</option>`,
+    ...categories.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`),
+    `<option value="__new__">＋ Neue Kategorie erstellen</option>`
+  ].join("");
+
+  $("newProductCategory").value = "";
+  $("newProductCategoryName").value = "";
+  $("newCategoryInline").classList.add("hidden");
+
+  // Schritt 2 zunächst ausblenden
+  $("newProductSubgroupStep").classList.add("hidden");
+  $("newProductSubgroup").innerHTML = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+
+  $("newProductChoiceHint").textContent = "Zuerst eine Kategorie auswählen.";
+  $("saveNewProductBtn").disabled = true;
+
+  $("newProductDialog").showModal();
+}
+
+function updateSuggestedNewProductUnit() {
+  if (newProductUnitTouched) return;
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
+  fillUnitSelect($("newProductDefaultUnit"), suggestDefaultUnit(pendingNewProductName, category, subgroup));
+}
+
+function selectedNewProductCategory() {
+  const selection = $("newProductCategory").value;
+  if (selection === "__new__") return $("newProductCategoryName").value.trim().replace(/\s+/g, " ");
+  return selection;
+}
+
+function selectedNewProductSubgroup() {
+  const selection = $("newProductSubgroup").value;
+  if (selection === "__new__") return $("newProductSubgroupName").value.trim().replace(/\s+/g, " ");
+  return selection;
+}
+
+function handleNewProductCategoryChange() {
+  const selection = $("newProductCategory").value;
+  const creating = selection === "__new__";
+
+  $("newCategoryInline").classList.toggle("hidden", !creating);
+
+  if (!selection) {
+    $("newProductSubgroupStep").classList.add("hidden");
+    $("newProductChoiceHint").textContent = "Zuerst eine Kategorie auswählen.";
+    updateNewProductSaveState();
+    return;
+  }
+
+  if (creating) {
+    $("newProductCategoryName").focus();
+    $("newProductSubgroupStep").classList.toggle("hidden", !$("newProductCategoryName").value.trim());
+  } else {
+    populateNewProductSubgroups(selection);
+    $("newProductSubgroupStep").classList.remove("hidden");
+  }
+
+  updateSuggestedNewProductUnit();
+  updateNewProductSaveState();
+}
+
+function handleNewProductCategoryNameInput() {
+  const category = $("newProductCategoryName").value.trim();
+
+  if (!category) {
+    $("newProductSubgroupStep").classList.add("hidden");
+    $("newProductChoiceHint").textContent = "Name der neuen Kategorie eingeben.";
+    updateNewProductSaveState();
+    return;
+  }
+
+  // Eine neue Kategorie hat noch keine Untergruppen:
+  // deshalb direkt die Möglichkeit zum Erstellen anbieten.
+  $("newProductSubgroup").innerHTML = [
+    `<option value="">Untergruppe auswählen …</option>`,
+    `<option value="__new__">＋ Neue Untergruppe erstellen</option>`
+  ].join("");
+  $("newProductSubgroup").value = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+  $("newProductSubgroupStep").classList.remove("hidden");
+  $("newProductChoiceHint").textContent = "Jetzt eine Untergruppe auswählen oder neu erstellen.";
+  updateSuggestedNewProductUnit();
+  updateNewProductSaveState();
+}
+
+function populateNewProductSubgroups(category) {
+  const groups = getSubgroups(category);
+  $("newProductSubgroup").innerHTML = [
+    `<option value="">Untergruppe auswählen …</option>`,
+    ...groups.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`),
+    `<option value="__new__">＋ Neue Untergruppe erstellen</option>`
+  ].join("");
+  $("newProductSubgroup").value = "";
+  $("newProductSubgroupName").value = "";
+  $("newSubgroupInline").classList.add("hidden");
+
+  $("newProductChoiceHint").textContent = groups.length
+    ? "Untergruppe auswählen. Falls nichts passt, direkt eine neue erstellen."
+    : "Noch keine Untergruppe vorhanden. Erstelle direkt eine neue.";
+}
+
+function handleNewProductSubgroupChange() {
+  const creating = $("newProductSubgroup").value === "__new__";
+  $("newSubgroupInline").classList.toggle("hidden", !creating);
+
+  if (creating) {
+    $("newProductSubgroupName").focus();
+    $("newProductChoiceHint").textContent = "Name der neuen Untergruppe eingeben.";
+  } else if ($("newProductSubgroup").value) {
+    $("newProductChoiceHint").textContent = "Kategorie und Untergruppe gewählt.";
+  }
+
+  updateSuggestedNewProductUnit();
+  updateNewProductSaveState();
+}
+
+function updateNewProductSaveState() {
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
+
+  const categoryValid = Boolean(category);
+  const subgroupValid = Boolean(subgroup);
+
+  $("saveNewProductBtn").disabled = !(categoryValid && subgroupValid);
+
+  if (categoryValid && subgroupValid) {
+    $("newProductChoiceHint").textContent = `Wird gespeichert unter: ${category} · ${subgroup}`;
+  }
+}
+
+$("newProductImageInput").addEventListener("change", e => {
+  const file = e.target.files?.[0] || null;
+  if (!file) return;
+  if (!String(file.type || "").startsWith("image/")) {
+    e.target.value = "";
+    return toast("Bitte ein Foto auswählen");
+  }
+  setLocalImageFile("new", file);
+});
+
+$("removeNewProductImageBtn").onclick = () => {
+  revokePreviewObjectUrl("new");
+  newProductImageFile = null;
+  $("newProductImageInput").value = "";
+  $("removeNewProductImageBtn").classList.add("hidden");
+  setProductImagePreview("new", "");
+};
+
+function closeNewProductDialog() {
+  $("newProductDialog").close();
+  revokePreviewObjectUrl("new");
+}
+$("closeNewProductDialog").onclick = closeNewProductDialog;
+$("cancelNewProductBtn").onclick = closeNewProductDialog;
+function closeQuantityDialog() {
+  $("quantityDialog").close();
+  pendingQuantityProduct = null;
+  pendingQuantityEdit = null;
+}
+$("closeQuantityDialog").onclick = closeQuantityDialog;
+$("cancelQuantityBtn").onclick = closeQuantityDialog;
+$("saveQuantityBtn").onclick = async () => {
+  if (pendingQuantityEdit) return saveEditedQuantity();
+  if (!pendingQuantityProduct) return;
+
+  const quantity = parseQuantity($("quantityValue").value);
+  const unit = $("quantityUnit").value;
+  if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
+
+  const product = pendingQuantityProduct;
+  const ok = await addItem(product.name, product.category, product.subgroup, quantity, unit);
+  if (ok) {
+    $("quantityDialog").close();
+    pendingQuantityProduct = null;
+  }
+};
+
+$("saveNewProductBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+
+  const name = pendingNewProductName;
+  const category = selectedNewProductCategory();
+  const subgroup = selectedNewProductSubgroup();
+  const quantity = parseQuantity($("newProductQuantity").value);
+  const defaultUnit = $("newProductDefaultUnit").value;
+
+  if (!name) return;
+  if (!category) return toast("Bitte Kategorie auswählen oder erstellen");
+  if (!subgroup) return toast("Bitte Untergruppe auswählen oder erstellen");
+  if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
+
+  $("saveNewProductBtn").disabled = true;
+
+  // Neue Kategorie/Untergruppe werden automatisch in der gemeinsamen Cloud angelegt.
+  const categoryOk = await ensureCatalogGroup(category, null);
+  if (!categoryOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  const subgroupOk = await ensureCatalogGroup(category, subgroup);
+  if (!subgroupOk) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  await loadCatalogGroups();
+
+  const savedProduct = await saveCatalogProduct(name, category, subgroup, defaultUnit);
+  if (!savedProduct) {
+    updateNewProductSaveState();
+    return;
+  }
+
+  if (newProductImageFile) {
+    await saveCatalogProductImage(savedProduct, newProductImageFile, savedProduct.image_path || "");
+    await loadCatalogProducts();
+  }
+
+  $("newProductDialog").close();
+  revokePreviewObjectUrl("new");
+  newProductImageFile = null;
+  $("productSearch").value = "";
+  await addItem(name, category, subgroup, quantity, defaultUnit);
+  renderProducts();
+};
+
+
+async function saveCatalogProduct(name, category, subgroup, defaultUnit = "Stück") {
+  if (!db) return false;
+
+  const alreadyExistingProduct = cloudProducts.find(
+    p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
+      p.category.toLowerCase() === category.toLowerCase() &&
+      p.subcategory.toLowerCase() === subgroup.toLowerCase()
+  );
+  if (alreadyExistingProduct) return alreadyExistingProduct;
+
+  const { error } = await db.from("catalog_products").insert({
+    product_name: String(name).trim().replace(/\s+/g, " "),
+    category,
+    subcategory: subgroup,
+    default_unit: UNIT_OPTIONS.includes(defaultUnit) ? defaultUnit : "Stück",
+    created_by: currentPerson || "Unbekannt"
+  });
+
+  if (error) {
+    const msg = String(error.message || "");
+    if (/default_unit|column/i.test(msg)) {
+      toast("Bitte zuerst die v21-Supabase-Datei ausführen");
+    } else if (msg.includes("catalog_products") || msg.includes("relation")) {
+      toast("Produktdatenbank muss zuerst in Supabase aktiviert werden");
+    } else if (msg.includes("duplicate") || msg.includes("unique")) {
+      await loadCatalogProducts();
+      return cloudProducts.find(
+        p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
+          p.category.toLowerCase() === category.toLowerCase() &&
+          p.subcategory.toLowerCase() === subgroup.toLowerCase()
+      ) || false;
+    } else {
+      toast("Produkt konnte nicht gespeichert werden");
+    }
+    console.warn(error);
+    return false;
+  }
+
+  await loadCatalogProducts();
+  const savedProduct = cloudProducts.find(
+    p => normalizeProductName(p.product_name) === normalizeProductName(name) &&
+      p.category.toLowerCase() === category.toLowerCase() &&
+      p.subcategory.toLowerCase() === subgroup.toLowerCase()
+  );
+  toast(`${name} in Datenbank aufgenommen`);
+  return savedProduct || false;
+}
+
+async function loadCatalogProducts() {
+  if (!db) return;
+  const { data, error } = await db
+    .from("catalog_products")
+    .select("*")
+    .order("product_name");
+
+  if (error) {
+    console.warn("catalog_products nicht verfügbar", error.message);
+    return;
+  }
+
+  cloudProducts = data || [];
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderProducts();
+}
+
+async function addItem(name, category, subgroup, quantity = null, unit = "Stück") {
+  if (!currentPerson) return $("profileDialog").showModal();
+  if (!db) return toast("Cloud-Verbindung noch nicht bereit");
+
+  if (activeListMode === "weekly") {
+    // Die persönliche Einkaufsliste ist eine dauerhafte Grundliste.
+    // Gleiche Produkte werden nicht doppelt angelegt.
+    const duplicate = weeklyItems.some(i =>
+      normalizeProductName(i.product_name) === normalizeProductName(name)
+    );
+    if (duplicate) return toast(`${name} ist bereits in deiner Grundliste`);
+
+    const { error } = await db.from("weekly_shopping_items").insert({
+      owner: currentPerson,
+      product_name: name,
+      category,
+      subcategory: subgroup,
+      quantity,
+      unit,
+      purchased: false
+    });
+    if (error) {
+      console.warn(error);
+      if (/quantity|unit|column/i.test(String(error.message || ""))) toast("Bitte zuerst die v21-Supabase-Datei ausführen");
+      else toast("Persönliche Liste konnte nicht ergänzt werden");
+      return false;
+    }
+    await loadWeeklyItems();
+    toast(`${name} · ${quantityLabel(quantity, unit)} hinzugefügt`);
+    return true;
+  }
+
+  const { error } = await db.from("shopping_items").insert({
+    product_name: name,
+    category,
+    subcategory: subgroup,
+    quantity,
+    unit,
+    added_by: currentPerson,
+    purchased: false
+  });
+  if (error) {
+    console.warn(error);
+    if (/quantity|unit|column/i.test(String(error.message || ""))) toast("Bitte zuerst die v21-Supabase-Datei ausführen");
+    else toast("Fehler beim Hinzufügen");
+    return false;
+  }
+  await loadItems();
+  toast(`${name} · ${quantityLabel(quantity, unit)} hinzugefügt`);
+  return true;
+}
+
+async function loadItems() {
+  if (!db) return;
+  $("syncState").textContent = "Synchronisiere …";
+  const { data, error } = await db.from("shopping_items")
+    .select("*")
+    .order("purchased", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (error) {
+    $("syncState").textContent = `Cloud-Fehler: ${error.status || ""} ${error.message || ""}`.trim();
+    console.warn("shopping_items:", error);
+    return;
+  }
+  items = data || [];
+  $("syncState").textContent = "Live synchronisiert";
+  renderList();
+}
+
+async function loadWeeklyItems() {
+  if (!db || !currentPerson) {
+    weeklyItems = [];
+    if (activeListMode === "weekly") renderList();
+    return;
+  }
+
+  if (activeListMode === "weekly") $("syncState").textContent = "Synchronisiere …";
+
+  const { data, error } = await db.from("weekly_shopping_items")
+    .select("*")
+    .eq("owner", currentPerson)
+    .order("purchased", { ascending: true })
+    .order("added_at", { ascending: false });
+
+  if (error) {
+    console.warn("weekly_shopping_items nicht verfügbar", error.message);
+    weeklyItems = [];
+    if (activeListMode === "weekly") {
+      $("syncState").textContent = "Persönliche Liste noch nicht eingerichtet";
+      renderList();
+    }
+    return;
+  }
+
+  weeklyItems = data || [];
+  if (activeListMode === "weekly") {
+    $("syncState").textContent = "Persönliche Liste synchronisiert";
+    renderList();
+  }
+}
+
+function renderList() {
+  const source = currentActiveItems();
+  const visible = hidePurchased ? source.filter(i => !i.purchased) : source;
+  const open = source.filter(i => !i.purchased).length;
+
+  $("openCount").textContent = `${open} offen`;
+  $("clearPurchasedBtn").textContent = hidePurchased ? "Gekaufte anzeigen" : "Gekaufte ausblenden";
+
+  if (!visible.length) {
+    const text = activeListMode === "weekly"
+      ? "🧾 Deine persönliche Grundliste ist noch leer."
+      : "🧺 Die Einkaufsliste ist leer.";
+    $("shoppingList").innerHTML = `<div class="empty">${text}</div>`;
+    return;
+  }
+
+  const sorted = [...visible].sort((a, b) => {
+    if (a.purchased !== b.purchased) return a.purchased ? 1 : -1;
+    const ad = a.created_at || a.added_at || 0;
+    const bd = b.created_at || b.added_at || 0;
+    return new Date(bd) - new Date(ad);
+  });
+
+  $("shoppingList").innerHTML = `<div class="flat-shopping-list">${sorted.map(renderItem).join("")}</div>`;
+}
+
+function renderItem(i) {
+  if (activeListMode === "weekly") {
+    const catalogProduct = catalogProductForItem(i);
+    return `<div class="item weekly-item ${i.purchased ? "done" : ""}" data-id="${i.id}">
+      <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
+      <div class="item-product-content">
+        ${productThumbHtml(catalogProduct, "list-product-thumb", "🛒")}
+        <div class="item-product-copy">
+          <div class="item-title-line">
+            <div class="item-name weekly-item-name">${escapeHtml(i.product_name)}</div>
+            <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${escapeHtml(quantityLabel(i.quantity, i.unit || "Stück"))}</button>
+          </div>
+        </div>
+      </div>
+      <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
+    </div>`;
+  }
+
+  const added = formatDate(i.added_at || i.created_at);
+  const bought = i.purchased_at ? formatDate(i.purchased_at) : "";
+  const catalogProduct = catalogProductForItem(i);
+  return `<div class="item ${i.purchased ? "done" : ""}" data-id="${i.id}">
+    <input class="check" type="checkbox" ${i.purchased ? "checked" : ""} aria-label="Gekauft" />
+    <div class="item-product-content">
+      ${productThumbHtml(catalogProduct, "list-product-thumb", "🛒")}
+      <div class="item-product-copy">
+        <div class="item-title-line">
+          <div class="item-name">${escapeHtml(i.product_name)}</div>
+          <button class="quantity-chip quantity-edit" type="button" title="Menge bearbeiten">${escapeHtml(quantityLabel(i.quantity, i.unit || "Stück"))}</button>
+        </div>
+        <div class="meta">📝 Eingetragen von <strong>${escapeHtml(i.added_by)}</strong> · ${added}${i.purchased ? `<br>✅ Gekauft von <strong>${escapeHtml(i.purchased_by || "?")}</strong> · ${bought}` : ""}</div>
+      </div>
+    </div>
+    <button class="delete-btn" title="Löschen" aria-label="Löschen">🗑</button>
+  </div>`;
+}
+
+$("shoppingList").addEventListener("change", async e => {
+  if (!e.target.classList.contains("check")) return;
+  if (!currentPerson) {
+    e.target.checked = !e.target.checked;
+    return $("profileDialog").showModal();
+  }
+
+  const id = e.target.closest(".item").dataset.id;
+  const purchased = e.target.checked;
+
+  if (activeListMode === "weekly") {
+    const payload = purchased
+      ? { purchased: true, purchased_at: new Date().toISOString() }
+      : { purchased: false, purchased_at: null };
+    const { error } = await db.from("weekly_shopping_items")
+      .update(payload)
+      .eq("id", id)
+      .eq("owner", currentPerson);
+    if (error) toast("Änderung konnte nicht gespeichert werden");
+    return;
+  }
+
+  const payload = purchased
+    ? { purchased: true, purchased_by: currentPerson, purchased_at: new Date().toISOString() }
+    : { purchased: false, purchased_by: null, purchased_at: null };
+  const { error } = await db.from("shopping_items").update(payload).eq("id", id);
+  if (error) toast("Änderung konnte nicht gespeichert werden");
+});
+
+$("shoppingList").addEventListener("click", async e => {
+  const row = e.target.closest(".item");
+  if (!row) return;
+  const id = row.dataset.id;
+  const source = currentActiveItems();
+  const item = source.find(x => String(x.id) === String(id));
+
+  if (e.target.closest(".quantity-edit")) {
+    if (!item) return;
+    openQuantityDialog({
+      name: item.product_name,
+      category: item.category,
+      subgroup: item.subcategory,
+      defaultUnit: item.unit || "Stück"
+    }, item);
+    return;
+  }
+
+  if (!e.target.classList.contains("delete-btn")) return;
+  if (!confirm(`„${item?.product_name || "Produkt"}“ wirklich aus der Liste löschen?`)) return;
+
+  if (activeListMode === "weekly") {
+    const { error } = await db.from("weekly_shopping_items")
+      .delete()
+      .eq("id", id)
+      .eq("owner", currentPerson);
+    if (error) toast("Löschen fehlgeschlagen");
+    return;
+  }
+
+  const { error } = await db.from("shopping_items").delete().eq("id", id);
+  if (error) toast("Löschen fehlgeschlagen");
+});
+
+// --- Katalogverwaltung ---
+$("manageCatalogBtn").onclick = () => {
+  refreshCategorySelectors();
+  renderCatalogAdmin();
+  $("catalogDialog").showModal();
+};
+$("closeCatalogDialog").onclick = () => $("catalogDialog").close();
+
+$("manageProductSearch").addEventListener("input", renderManagedProducts);
+$("manageCategorySelect").addEventListener("change", refreshManageSubgroupList);
+
+$("addCategoryBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+  const category = $("newCategoryName").value.trim().replace(/\s+/g, " ");
+  if (!category) return toast("Bitte Kategoriename eingeben");
+  const ok = await ensureCatalogGroup(category, null);
+  if (ok) {
+    $("newCategoryName").value = "";
+    await refreshCatalogAfterChange();
+    toast("Kategorie erstellt");
+  }
+};
+
+$("addSubgroupBtn").onclick = async () => {
+  if (!currentPerson) return $("profileDialog").showModal();
+  const category = $("manageCategorySelect").value;
+  const subgroup = $("newSubgroupName").value.trim().replace(/\s+/g, " ");
+  if (!category) return toast("Bitte Kategorie wählen");
+  if (!subgroup) return toast("Bitte Untergruppe eingeben");
+  const ok = await ensureCatalogGroup(category, subgroup);
+  if (ok) {
+    $("newSubgroupName").value = "";
+    await refreshCatalogAfterChange();
+    toast("Untergruppe erstellt");
+  }
+};
+
+async function ensureCatalogGroup(category, subcategory = null) {
+  if (!db || !category) return false;
+
+  const cleanCategory = category.trim().replace(/\s+/g, " ");
+  const normalizedSub = subcategory?.trim().replace(/\s+/g, " ") || null;
+
+  const exists = customGroups.some(
+    g => g.category.toLowerCase() === cleanCategory.toLowerCase() &&
+      (g.subcategory || "").toLowerCase() === (normalizedSub || "").toLowerCase()
+  );
+  if (exists) return true;
+
+  const { error } = await db.from("catalog_groups").insert({
+    category: cleanCategory,
+    subcategory: normalizedSub,
+    created_by: currentPerson || "Unbekannt"
+  });
+
+  if (error) {
+    const msg = String(error.message || "");
+    if (msg.includes("duplicate") || msg.includes("unique")) {
+      await loadCatalogGroups();
+      return true;
+    }
+    toast("Kategorie oder Untergruppe konnte nicht gespeichert werden");
+    console.warn(error);
+    return false;
+  }
+
+  await loadCatalogGroups();
+  return true;
+}
+
+async function loadCatalogGroups() {
+  if (!db) return;
+  const { data, error } = await db.from("catalog_groups")
+    .select("*")
+    .order("category")
+    .order("subcategory");
+
+  if (error) {
+    console.warn("catalog_groups nicht verfügbar", error.message);
+    return;
+  }
+
+  customGroups = data || [];
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderCatalogAdmin();
+}
+
+function refreshManageSubgroupList() {
+  const category = $("manageCategorySelect").value;
+  const groups = getSubgroups(category);
+  $("manageSubgroupHint").textContent = groups.length ? groups.join(", ") : "";
+}
+
+function renderCatalogAdmin() {
+  renderCustomGroups();
+  renderManagedProducts();
+}
+
+function renderManagedProducts() {
+  if (!$("manageProductResults")) return;
+  const q = $("manageProductSearch").value.trim().toLocaleLowerCase("de-CH");
+
+  if (!q) {
+    $("manageProductResults").innerHTML =
+      `<div class="catalog-empty">Produktnamen eingeben, um Produkte zu bearbeiten oder zu löschen.</div>`;
+    return;
+  }
+
+  const matches = cloudProducts
+    .filter(p => `${p.product_name} ${p.category} ${p.subcategory}`.toLocaleLowerCase("de-CH").includes(q))
+    .sort((a, b) => {
+      const rankDiff = productSearchRank(a.product_name, a.category, a.subcategory, q) -
+        productSearchRank(b.product_name, b.category, b.subcategory, q);
+      if (rankDiff) return rankDiff;
+      return a.product_name.localeCompare(b.product_name, "de-CH", { sensitivity: "base" });
+    })
+    .slice(0, 60);
+
+  if (!matches.length) {
+    $("manageProductResults").innerHTML = `<div class="catalog-empty">Kein Produkt gefunden.</div>`;
+    return;
+  }
+
+  $("manageProductResults").innerHTML = matches.map(p => `
+    <div class="admin-row">
+      <button class="admin-main-button with-thumb" type="button" data-edit-product-id="${p.id}">
+        ${productThumbHtml(p, "admin-product-thumb")}
+        <span class="admin-product-copy">
+          <strong>${escapeHtml(p.product_name)}</strong>
+          <span>${escapeHtml(p.category)} · ${escapeHtml(p.subcategory)} · Standard: ${escapeHtml(productDefaultUnit(p))}</span>
+        </span>
+      </button>
+      <button class="admin-edit-btn" type="button" data-edit-product-id="${p.id}" aria-label="Bearbeiten">✏️</button>
+      <button class="admin-delete-btn" type="button" data-delete-product-id="${p.id}" aria-label="Löschen">🗑</button>
+    </div>
+  `).join("");
+}
+
+$("manageProductResults").addEventListener("click", async e => {
+  const deleteBtn = e.target.closest("[data-delete-product-id]");
+  if (deleteBtn) {
+    await deleteCatalogProductById(deleteBtn.dataset.deleteProductId);
+    return;
+  }
+
+  const editBtn = e.target.closest("[data-edit-product-id]");
+  if (editBtn) openEditProductDialog(editBtn.dataset.editProductId);
+});
+
+function openEditProductDialog(id) {
+  const product = cloudProducts.find(p => String(p.id) === String(id));
+  if (!product) return;
+
+  $("editProductId").value = product.id;
+  $("editProductName").value = product.product_name;
+
+  fillEditProductCategories(product.category);
+  fillEditProductSubgroups(product.category, product.subcategory);
+  fillUnitSelect($("editProductDefaultUnit"), productDefaultUnit(product));
+
+  revokePreviewObjectUrl("edit");
+  editProductImageFile = null;
+  editProductRemoveImage = false;
+  editProductCurrentImagePath = product.image_path || "";
+  $("editProductImageInput").value = "";
+  setProductImagePreview("edit", catalogProductImageUrl(product));
+  $("removeEditedProductImageBtn").classList.toggle("hidden", !product.image_path);
+
+  $("editProductDialog").showModal();
+}
+
+function fillEditProductCategories(selected = "") {
+  const categories = getAllCategories();
+  $("editProductCategory").innerHTML = categories
+    .map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`)
+    .join("");
+  if (categories.includes(selected)) $("editProductCategory").value = selected;
+}
+
+function fillEditProductSubgroups(category, selected = "") {
+  const groups = getSubgroups(category);
+  $("editProductSubgroup").innerHTML = groups
+    .map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`)
+    .join("");
+  if (groups.includes(selected)) $("editProductSubgroup").value = selected;
+}
+
+$("editProductCategory").addEventListener("change", () => {
+  fillEditProductSubgroups($("editProductCategory").value);
+});
+
+$("editProductImageInput").addEventListener("change", e => {
+  const file = e.target.files?.[0] || null;
+  if (!file) return;
+  if (!String(file.type || "").startsWith("image/")) {
+    e.target.value = "";
+    return toast("Bitte ein Foto auswählen");
+  }
+  editProductRemoveImage = false;
+  setLocalImageFile("edit", file);
+});
+
+$("removeEditedProductImageBtn").onclick = () => {
+  revokePreviewObjectUrl("edit");
+  editProductImageFile = null;
+  editProductRemoveImage = true;
+  $("editProductImageInput").value = "";
+  setProductImagePreview("edit", "");
+  $("removeEditedProductImageBtn").classList.add("hidden");
+};
+
+function closeEditProductDialog() {
+  $("editProductDialog").close();
+  revokePreviewObjectUrl("edit");
+}
+$("closeEditProductDialog").onclick = closeEditProductDialog;
+
+$("saveEditedProductBtn").onclick = async () => {
+  const id = $("editProductId").value;
+  const name = $("editProductName").value.trim().replace(/\s+/g, " ");
+  const category = $("editProductCategory").value;
+  const subgroup = $("editProductSubgroup").value;
+  const defaultUnit = $("editProductDefaultUnit").value;
+
+  if (!name || !category || !subgroup || !defaultUnit) return toast("Alle Felder ausfüllen");
+
+  const duplicate = cloudProducts.some(p =>
+    String(p.id) !== String(id) &&
+    normalizeProductName(p.product_name) === normalizeProductName(name) &&
+    p.category.toLowerCase() === category.toLowerCase() &&
+    p.subcategory.toLowerCase() === subgroup.toLowerCase()
+  );
+  if (duplicate) return toast("Dieses Produkt existiert dort bereits");
+
+  const { error } = await db.from("catalog_products")
+    .update({
+      product_name: name,
+      category,
+      subcategory: subgroup,
+      default_unit: defaultUnit
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.warn(error);
+    if (/default_unit|column/i.test(String(error.message || ""))) return toast("Bitte zuerst die v21-Supabase-Datei ausführen");
+    return toast("Produkt konnte nicht geändert werden");
+  }
+
+  const productForImage = { id, image_path: editProductCurrentImagePath };
+  if (editProductImageFile) {
+    await saveCatalogProductImage(productForImage, editProductImageFile, editProductCurrentImagePath);
+  } else if (editProductRemoveImage && editProductCurrentImagePath) {
+    await removeCatalogProductImage(productForImage);
+  }
+
+  $("editProductDialog").close();
+  revokePreviewObjectUrl("edit");
+  await refreshCatalogAfterChange();
+  toast("Produkt geändert");
+};
+
+$("deleteEditedProductBtn").onclick = async () => {
+  const id = $("editProductId").value;
+  const ok = await deleteCatalogProductById(id);
+  if (ok) $("editProductDialog").close();
+};
+
+async function deleteCatalogProductById(id) {
+  const product = cloudProducts.find(p => String(p.id) === String(id));
+  if (!product) return false;
+
+  if (!confirm(`„${product.product_name}“ aus dem Produktkatalog löschen? Bereits eingetragene Einkaufslisten bleiben unverändert.`)) {
+    return false;
+  }
+
+  const imagePath = product.image_path || "";
+  const { error } = await db.from("catalog_products").delete().eq("id", id);
+  if (error) {
+    console.warn(error);
+    toast("Produkt konnte nicht gelöscht werden");
+    return false;
+  }
+
+  if (imagePath) await deleteStorageObject(imagePath);
+  await refreshCatalogAfterChange();
+  toast("Produkt gelöscht");
+  return true;
+}
+
+function renderCustomGroups() {
+  if (!$("customGroupList")) return;
+
+  const categories = getAllCategories();
+  if (!categories.length) {
+    $("customGroupList").innerHTML = `<div class="catalog-empty">Keine Kategorien vorhanden.</div>`;
+    return;
+  }
+
+  $("customGroupList").innerHTML = categories.map(category => {
+    const groups = getSubgroups(category);
+    return `
+      <div class="admin-category-card">
+        <div class="admin-category-head">
+          <strong>${escapeHtml(category)}</strong>
+          <div class="admin-actions">
+            <button class="admin-edit-btn" type="button" data-rename-category="${escapeAttr(category)}" aria-label="Kategorie umbenennen">✏️</button>
+            <button class="admin-delete-btn" type="button" data-delete-category="${escapeAttr(category)}" aria-label="Kategorie löschen">🗑</button>
+          </div>
+        </div>
+
+        <div class="admin-subgroups">
+          ${groups.length ? groups.map(subgroup => `
+            <div class="admin-subgroup-row">
+              <span>${escapeHtml(subgroup)}</span>
+              <div class="admin-actions">
+                <button class="admin-edit-btn small" type="button"
+                  data-rename-subgroup="${escapeAttr(subgroup)}"
+                  data-category="${escapeAttr(category)}"
+                  aria-label="Untergruppe umbenennen">✏️</button>
+                <button class="admin-delete-btn small" type="button"
+                  data-delete-subgroup="${escapeAttr(subgroup)}"
+                  data-category="${escapeAttr(category)}"
+                  aria-label="Untergruppe löschen">🗑</button>
+              </div>
+            </div>
+          `).join("") : `<div class="small-muted">Noch keine Untergruppen</div>`}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+$("customGroupList").addEventListener("click", async e => {
+  const renameCategory = e.target.closest("[data-rename-category]");
+  if (renameCategory) {
+    await renameCatalogCategory(renameCategory.dataset.renameCategory);
+    return;
+  }
+
+  const deleteCategory = e.target.closest("[data-delete-category]");
+  if (deleteCategory) {
+    await deleteCatalogCategory(deleteCategory.dataset.deleteCategory);
+    return;
+  }
+
+  const renameSub = e.target.closest("[data-rename-subgroup]");
+  if (renameSub) {
+    await renameCatalogSubgroup(renameSub.dataset.category, renameSub.dataset.renameSubgroup);
+    return;
+  }
+
+  const deleteSub = e.target.closest("[data-delete-subgroup]");
+  if (deleteSub) {
+    await deleteCatalogSubgroup(deleteSub.dataset.category, deleteSub.dataset.deleteSubgroup);
+  }
+});
+
+async function renameCatalogCategory(oldCategory) {
+  const newCategory = prompt("Neuer Name der Kategorie:", oldCategory)?.trim().replace(/\s+/g, " ");
+  if (!newCategory || newCategory === oldCategory) return;
+
+  const existingOther = getAllCategories().some(c =>
+    c.toLowerCase() === newCategory.toLowerCase() &&
+    c.toLowerCase() !== oldCategory.toLowerCase()
+  );
+  if (existingOther) return toast("Eine Kategorie mit diesem Namen existiert bereits");
+
+  const productUpdate = await db.from("catalog_products")
+    .update({ category: newCategory })
+    .eq("category", oldCategory);
+
+  if (productUpdate.error) {
+    console.warn(productUpdate.error);
+    return toast("Kategorie konnte nicht umbenannt werden");
+  }
+
+  const groupUpdate = await db.from("catalog_groups")
+    .update({ category: newCategory })
+    .eq("category", oldCategory);
+
+  if (groupUpdate.error) {
+    console.warn(groupUpdate.error);
+    return toast("Kategorie wurde nur teilweise geändert");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Kategorie umbenannt");
+}
+
+async function deleteCatalogCategory(category) {
+  const count = cloudProducts.filter(p => p.category === category).length;
+  if (!confirm(`Kategorie „${category}“ löschen? Dabei werden auch ${count} Produkte aus dieser Kategorie aus dem Produktkatalog gelöscht. Bereits bestehende Einkaufslisten bleiben unverändert.`)) {
+    return;
+  }
+
+  const productDelete = await db.from("catalog_products").delete().eq("category", category);
+  if (productDelete.error) {
+    console.warn(productDelete.error);
+    return toast("Produkte der Kategorie konnten nicht gelöscht werden");
+  }
+
+  const groupDelete = await db.from("catalog_groups").delete().eq("category", category);
+  if (groupDelete.error) {
+    console.warn(groupDelete.error);
+    return toast("Kategorie konnte nicht vollständig gelöscht werden");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Kategorie gelöscht");
+}
+
+async function renameCatalogSubgroup(category, oldSubgroup) {
+  const newSubgroup = prompt("Neuer Name der Untergruppe:", oldSubgroup)?.trim().replace(/\s+/g, " ");
+  if (!newSubgroup || newSubgroup === oldSubgroup) return;
+
+  const exists = getSubgroups(category).some(g =>
+    g.toLowerCase() === newSubgroup.toLowerCase() &&
+    g.toLowerCase() !== oldSubgroup.toLowerCase()
+  );
+  if (exists) return toast("Diese Untergruppe existiert bereits");
+
+  const productUpdate = await db.from("catalog_products")
+    .update({ subcategory: newSubgroup })
+    .eq("category", category)
+    .eq("subcategory", oldSubgroup);
+
+  if (productUpdate.error) {
+    console.warn(productUpdate.error);
+    return toast("Untergruppe konnte nicht umbenannt werden");
+  }
+
+  const groupUpdate = await db.from("catalog_groups")
+    .update({ subcategory: newSubgroup })
+    .eq("category", category)
+    .eq("subcategory", oldSubgroup);
+
+  if (groupUpdate.error) {
+    console.warn(groupUpdate.error);
+    return toast("Untergruppe wurde nur teilweise geändert");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Untergruppe umbenannt");
+}
+
+async function deleteCatalogSubgroup(category, subgroup) {
+  const count = cloudProducts.filter(p => p.category === category && p.subcategory === subgroup).length;
+  if (!confirm(`Untergruppe „${subgroup}“ löschen? Dabei werden auch ${count} Produkte aus dieser Untergruppe aus dem Produktkatalog gelöscht. Bereits bestehende Einkaufslisten bleiben unverändert.`)) {
+    return;
+  }
+
+  const productDelete = await db.from("catalog_products")
+    .delete()
+    .eq("category", category)
+    .eq("subcategory", subgroup);
+
+  if (productDelete.error) {
+    console.warn(productDelete.error);
+    return toast("Produkte der Untergruppe konnten nicht gelöscht werden");
+  }
+
+  const groupDelete = await db.from("catalog_groups")
+    .delete()
+    .eq("category", category)
+    .eq("subcategory", subgroup);
+
+  if (groupDelete.error) {
+    console.warn(groupDelete.error);
+    return toast("Untergruppe konnte nicht vollständig gelöscht werden");
+  }
+
+  await refreshCatalogAfterChange();
+  toast("Untergruppe gelöscht");
+}
+
+async function refreshCatalogAfterChange() {
+  await Promise.all([loadCatalogGroups(), loadCatalogProducts()]);
+  refreshCategorySelectors();
+  refreshSubgroups();
+  renderCatalogAdmin();
+  renderProducts();
+}
+
+
+async function resetWeeklyChecks() {
+  if (!db || !currentPerson) return;
+  if (!weeklyItems.some(i => i.purchased)) {
+    return toast("Es gibt keine Häkchen zum Zurücksetzen");
+  }
+
+  if (!confirm("Alle Häkchen deiner persönlichen Einkaufsliste zurücksetzen? Die Produkte bleiben erhalten.")) return;
+
+  const { error } = await db.from("weekly_shopping_items")
+    .update({ purchased: false, purchased_at: null })
+    .eq("owner", currentPerson)
+    .eq("purchased", true);
+
+  if (error) {
+    console.warn(error);
+    return toast("Häkchen konnten nicht zurückgesetzt werden");
+  }
+
+  toast("Bereit für den nächsten Wocheneinkauf");
+  await loadWeeklyItems();
+}
+
+$("clearPurchasedBtn").onclick = () => { hidePurchased = !hidePurchased; renderList(); };
+$("refreshBtn").onclick = async () => { await Promise.all([loadItems(), loadWeeklyItems(), loadCatalogGroups(), loadCatalogProducts()]); };
+
+
+function openProductImageViewer(src, alt = "Produktfoto") {
+  const dialog = $("productImageDialog");
+  const img = $("productImageLarge");
+  if (!dialog || !img || !src) return;
+  img.src = src;
+  img.alt = alt || "Produktfoto";
+  if (!dialog.open) dialog.showModal();
+}
+
+function closeProductImageViewer() {
+  const dialog = $("productImageDialog");
+  const img = $("productImageLarge");
+  if (dialog?.open) dialog.close();
+  if (img) img.removeAttribute("src");
+}
+
+$("closeProductImageDialog").onclick = closeProductImageViewer;
+$("productImageDialog").addEventListener("click", e => {
+  if (e.target === $("productImageDialog")) closeProductImageViewer();
+});
+
+// Capture-Listener: Beim Tippen auf ein Produktbild nur das Bild öffnen
+// und nicht gleichzeitig den umgebenden Produkt-Button auslösen.
+document.addEventListener("click", e => {
+  const img = e.target.closest?.(
+    ".product-thumb-wrap img, .admin-product-thumb img, .list-product-thumb img, .product-image-preview img"
+  );
+  if (!img) return;
+  e.preventDefault();
+  e.stopPropagation();
+  openProductImageViewer(img.currentSrc || img.src, img.alt || "Produktfoto");
+}, true);
+
+function formatDate(iso) {
+  if (!iso) return "";
+  return new Intl.DateTimeFormat("de-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}
+function escapeHtml(s="") { return String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function escapeAttr(s="") { return escapeHtml(s); }
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1800);
+}
+
+async function start() {
+  await cleanupOldAppCaches();
+  initProfile();
+  buildCatalog();
+  db = createDatabaseClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+  $("syncState").textContent = "Verbinde mit Cloud …";
+
+  await Promise.all([
+    loadItems(),
+    loadWeeklyItems(),
+    loadCatalogGroups(),
+    loadCatalogProducts()
+  ]);
+
+  window.setInterval(async () => {
+    if (document.hidden || !db) return;
+    await Promise.all([
+      loadItems(),
+      loadWeeklyItems(),
+      loadCatalogGroups(),
+      loadCatalogProducts()
+    ]);
+  }, 4000);
+
+  document.addEventListener("visibilitychange", async () => {
+    if (!document.hidden && db) {
+      await Promise.all([
+        loadItems(),
+        loadWeeklyItems(),
+        loadCatalogGroups(),
+        loadCatalogProducts()
+      ]);
+    }
+  });
+}
+start().catch(err => {
+  console.error("App-Start fehlgeschlagen:", err);
+  const state = document.getElementById("syncState");
+  if (state) state.textContent = "Startfehler: " + (err?.message || "unbekannt");
+});
+
+  </script>
+
+</body>
+</html>
