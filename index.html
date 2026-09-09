@@ -881,7 +881,7 @@ main {
   <div id="app">
     <header class="topbar">
       <div>
-        <div class="eyebrow">Gemeinsam einkaufen · v28</div>
+        <div class="eyebrow">Gemeinsam einkaufen · v30</div>
         <h1>Familien Einkauf</h1>
       </div>
       <button id="profileBtn" class="profile-pill">👤 Profil</button>
@@ -1057,7 +1057,26 @@ main {
         </div>
         <div>
           <label for="quantityUnit">Masseinheit <span class="small-muted">(optional)</span></label>
-          <input id="quantityUnit" type="text" list="unitOptionsList" autocomplete="off" placeholder="optional" />
+          <select id="quantityUnit">
+            <option value="">Keine Einheit</option>
+            <option value="Stück">Stück</option>
+            <option value="g">g</option>
+            <option value="kg">kg</option>
+            <option value="ml">ml</option>
+            <option value="l">l</option>
+            <option value="Packung">Packung</option>
+            <option value="Beutel">Beutel</option>
+            <option value="Flasche">Flasche</option>
+            <option value="Dose">Dose</option>
+            <option value="Glas">Glas</option>
+            <option value="Rolle">Rolle</option>
+            <option value="Tube">Tube</option>
+            <option value="Schachtel">Schachtel</option>
+            <option value="Bund">Bund</option>
+            <option value="Paar">Paar</option>
+            <option value="__custom__">Andere …</option>
+          </select>
+          <input id="quantityUnitCustom" class="hidden" type="text" autocomplete="off" placeholder="Eigene Einheit eingeben" />
         </div>
       </div>
       <div class="small-muted">Einheit aus der Liste auswählen oder eine eigene Einheit eingeben. Das Feld darf leer bleiben.</div>
@@ -1066,23 +1085,6 @@ main {
       <button id="cancelQuantityBtn" class="ghost-btn full dialog-secondary" type="button">Abbrechen</button>
     </div>
   </dialog>
-  <datalist id="unitOptionsList">
-    <option value="Stück"></option>
-    <option value="g"></option>
-    <option value="kg"></option>
-    <option value="ml"></option>
-    <option value="l"></option>
-    <option value="Packung"></option>
-    <option value="Beutel"></option>
-    <option value="Flasche"></option>
-    <option value="Dose"></option>
-    <option value="Glas"></option>
-    <option value="Rolle"></option>
-    <option value="Tube"></option>
-    <option value="Schachtel"></option>
-    <option value="Bund"></option>
-    <option value="Paar"></option>
-  </datalist>
 
   <dialog id="newProductDialog">
     <div class="dialog-card">
@@ -1132,7 +1134,26 @@ main {
             </div>
             <div>
               <label for="newProductDefaultUnit">Masseinheit</label>
-              <input id="newProductDefaultUnit" type="text" list="unitOptionsList" autocomplete="off" placeholder="optional" />
+              <select id="newProductDefaultUnit">
+                <option value="">Keine Einheit</option>
+                <option value="Stück">Stück</option>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="ml">ml</option>
+                <option value="l">l</option>
+                <option value="Packung">Packung</option>
+                <option value="Beutel">Beutel</option>
+                <option value="Flasche">Flasche</option>
+                <option value="Dose">Dose</option>
+                <option value="Glas">Glas</option>
+                <option value="Rolle">Rolle</option>
+                <option value="Tube">Tube</option>
+                <option value="Schachtel">Schachtel</option>
+                <option value="Bund">Bund</option>
+                <option value="Paar">Paar</option>
+                <option value="__custom__">Andere …</option>
+              </select>
+              <input id="newProductDefaultUnitCustom" class="hidden" type="text" autocomplete="off" placeholder="Eigene Einheit eingeben" />
             </div>
           </div>
           <div class="small-muted">Einheit aus der Liste auswählen oder frei eingeben. Menge und Masseinheit dürfen beide leer bleiben.</div>
@@ -1602,10 +1623,58 @@ async function removeCatalogProductImage(product) {
   return true;
 }
 
-function fillUnitSelect(input, selected = "") {
-  if (!input) return;
-  input.value = String(selected ?? "").trim();
+function fillUnitSelect(select, selected = "", customInputId = "") {
+  if (!select) return;
+  const clean = String(selected ?? "").trim();
+  const custom = customInputId ? $(customInputId) : null;
+
+  if (!clean) {
+    select.value = "";
+    if (custom) {
+      custom.value = "";
+      custom.classList.add("hidden");
+    }
+    return;
+  }
+
+  if (UNIT_OPTIONS.includes(clean)) {
+    select.value = clean;
+    if (custom) {
+      custom.value = "";
+      custom.classList.add("hidden");
+    }
+    return;
+  }
+
+  select.value = "__custom__";
+  if (custom) {
+    custom.value = clean;
+    custom.classList.remove("hidden");
+  }
 }
+
+function toggleCustomUnitInput(selectId, customInputId) {
+  const select = $(selectId);
+  const custom = $(customInputId);
+  if (!select || !custom) return;
+
+  const isCustom = select.value === "__custom__";
+  custom.classList.toggle("hidden", !isCustom);
+  if (!isCustom) custom.value = "";
+  if (isCustom) setTimeout(() => custom.focus(), 0);
+}
+
+function getUnitValue(selectId, customInputId) {
+  const select = $(selectId);
+  if (!select) return "";
+  if (select.value === "__custom__") {
+    return String($(customInputId)?.value || "").trim();
+  }
+  return String(select.value || "").trim();
+}
+
+$("quantityUnit")?.addEventListener("change", () => toggleCustomUnitInput("quantityUnit", "quantityUnitCustom"));
+$("newProductDefaultUnit")?.addEventListener("change", () => toggleCustomUnitInput("newProductDefaultUnit", "newProductDefaultUnitCustom"));
 
 function parseQuantity(value) {
   const normalized = String(value ?? "").trim().replace(",", ".");
@@ -1680,7 +1749,7 @@ function openQuantityDialog(product, editItem = null) {
   $("quantityDialogTitle").textContent = editItem ? "Menge bearbeiten" : "Menge angeben";
   $("quantityProductLabel").textContent = product?.name || product?.product_name || editItem?.product_name || "Produkt";
   $("quantityValue").value = editItem ? formatQuantity(editItem.quantity) : "";
-  fillUnitSelect($("quantityUnit"), editItem ? (editItem.unit || "") : "");
+  fillUnitSelect($("quantityUnit"), editItem ? (editItem.unit || "") : "", "quantityUnitCustom");
   $("saveQuantityBtn").textContent = editItem ? "Menge speichern" : "Auf Liste setzen";
   $("quantityDialog").showModal();
   setTimeout(() => $("quantityValue")?.select(), 0);
@@ -1689,7 +1758,7 @@ function openQuantityDialog(product, editItem = null) {
 async function saveEditedQuantity() {
   if (!pendingQuantityEdit) return;
   const quantity = parseQuantity($("quantityValue").value);
-  const unit = $("quantityUnit").value.trim();
+  const unit = getUnitValue("quantityUnit", "quantityUnitCustom");
   if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
 
   const table = activeListMode === "weekly" ? "weekly_shopping_items" : "shopping_items";
@@ -2008,7 +2077,7 @@ function openNewProductDialog(name) {
   pendingNewProductName = cleanName;
   $("newProductNameLabel").textContent = cleanName;
   $("newProductQuantity").value = "";
-  fillUnitSelect($("newProductDefaultUnit"), "");
+  fillUnitSelect($("newProductDefaultUnit"), "", "newProductDefaultUnitCustom");
   revokePreviewObjectUrl("new");
   newProductImageFile = null;
   $("newProductImageInput").value = "";
@@ -2179,7 +2248,7 @@ $("saveQuantityBtn").onclick = async () => {
   if (!pendingQuantityProduct) return;
 
   const quantity = parseQuantity($("quantityValue").value);
-  const unit = $("quantityUnit").value.trim();
+  const unit = getUnitValue("quantityUnit", "quantityUnitCustom");
   if (Number.isNaN(quantity)) return toast("Bitte eine gültige Menge grösser als 0 eingeben oder das Feld leer lassen");
 
   const product = pendingQuantityProduct;
@@ -2197,7 +2266,7 @@ $("saveNewProductBtn").onclick = async () => {
   const category = selectedNewProductCategory();
   const subgroup = selectedNewProductSubgroup();
   const quantity = parseQuantity($("newProductQuantity").value);
-  const unit = $("newProductDefaultUnit").value.trim();
+  const unit = getUnitValue("newProductDefaultUnit", "newProductDefaultUnitCustom");
 
   if (!name) return;
   if (!category) return toast("Bitte Kategorie auswählen oder erstellen");
