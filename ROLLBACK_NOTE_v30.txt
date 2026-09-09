@@ -1,0 +1,1 @@
+Temporäre Notiz: v30-Ladeversuche wurden zurückgesetzt, damit die bewährte direkte App-Datei wieder als index.html läuft. Die Einheitenänderung wird anschliessend direkt in der Hauptdatei umgesetzt.
