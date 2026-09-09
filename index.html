@@ -3087,7 +3087,7 @@ function toast(msg) {
 }
 
 async function start() {
-  await cleanupOldAppCaches();
+  cleanupOldAppCaches();
   initProfile();
   buildCatalog();
   db = createDatabaseClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
