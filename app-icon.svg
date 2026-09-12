@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0" stop-color="#0b7654"/>
+      <stop offset="0.58" stop-color="#075b43"/>
+      <stop offset="1" stop-color="#033c2c"/>
+    </radialGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f2f3ef"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14845d"/>
+      <stop offset="1" stop-color="#045239"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffc850"/>
+      <stop offset="1" stop-color="#f39a12"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#45b6ff"/>
+      <stop offset="1" stop-color="#0878d7"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b76af1"/>
+      <stop offset="1" stop-color="#7134bd"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#001c13" flood-opacity="0.42"/>
+    </filter>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#001c13" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <!-- Full-bleed background: no white border in the source icon -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="247" r="197" fill="#0d7554" opacity="0.36"/>
+
+  <!-- Bag handle -->
+  <path d="M184 202v-49c0-55 32-86 72-86s72 31 72 86v49" fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" filter="url(#soft)"/>
+  <path d="M184 202v-49c0-55 32-86 72-86s72 31 72 86v49" fill="none" stroke="#f3f4f0" stroke-width="23" stroke-linecap="round"/>
+
+  <!-- Groceries behind the checklist -->
+  <g filter="url(#soft)">
+    <g fill="#72cf35">
+      <circle cx="157" cy="170" r="29"/><circle cx="132" cy="187" r="24"/><circle cx="183" cy="187" r="24"/><circle cx="160" cy="198" r="31"/>
+    </g>
+    <path d="M157 198l-18-42m18 42 21-39m-21 39-3-50" stroke="#45a928" stroke-width="6" stroke-linecap="round" opacity="0.8"/>
+
+    <rect x="204" y="114" width="49" height="108" rx="23" fill="url(#orange)"/>
+    <path d="M217 145l21-13m-21 44 21-13" stroke="#dd7c08" stroke-width="8" stroke-linecap="round"/>
+
+    <path d="M278 142h35l8 18v63h-51v-63z" fill="#16a85f"/>
+    <rect x="284" y="127" width="24" height="18" rx="5" fill="#57c97d"/>
+    <path d="M329 173c18-26 65-17 66 22 0 29-28 42-52 27-24 15-51 2-51-27 1-35 31-48 54-29" fill="#f2463d"/>
+    <path d="M347 160c7-15 21-20 34-18-5 15-17 23-33 23z" fill="#71c83d"/>
+    <path d="M347 161l-4-15" stroke="#96421f" stroke-width="5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Main checklist card -->
+  <rect x="94" y="189" width="324" height="224" rx="31" fill="url(#paper)" filter="url(#shadow)"/>
+
+  <!-- Checklist rows -->
+  <g>
+    <circle cx="149" cy="248" r="24" fill="url(#green)"/>
+    <circle cx="149" cy="304" r="24" fill="url(#green)"/>
+    <circle cx="149" cy="360" r="24" fill="url(#green)"/>
+    <path d="M137 248l8 8 17-19M137 304l8 8 17-19M137 360l8 8 17-19" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M194 246h125M194 302h112M194 358h72" stroke="#075c42" stroke-width="13" stroke-linecap="round"/>
+  </g>
+
+  <!-- Large confirmation check -->
+  <path d="M292 344l38 38 88-99" fill="none" stroke="#06442f" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+  <path d="M288 336l38 38 88-99" fill="none" stroke="#0c8159" stroke-width="29" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Four family/profile figures -->
+  <g filter="url(#soft)">
+    <g fill="#5bc653"><circle cx="155" cy="405" r="22"/><path d="M122 463c0-30 14-47 33-47s33 17 33 47z"/></g>
+    <g fill="url(#orange)"><circle cx="222" cy="405" r="22"/><path d="M189 463c0-30 14-47 33-47s33 17 33 47z"/></g>
+    <g fill="url(#blue)"><circle cx="289" cy="405" r="22"/><path d="M256 463c0-30 14-47 33-47s33 17 33 47z"/></g>
+    <g fill="url(#purple)"><circle cx="356" cy="405" r="22"/><path d="M323 463c0-30 14-47 33-47s33 17 33 47z"/></g>
+  </g>
+</svg>
