@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Familien Einkauf" />
-  <link rel="manifest" href="manifest.webmanifest?v=31" />
+  <link rel="manifest" href="manifest.webmanifest?v=32" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=31" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=31" />
 <title>Familien Einkauf</title>
@@ -875,6 +875,46 @@ main {
   box-shadow: 0 3px 14px rgba(0,0,0,.2);
 }
 
+
+/* v32 – App-Icon-Badge bei neuen gemeinsamen Einkäufen */
+.shopping-push-wrap {
+  padding: 10px 14px 0;
+}
+.shopping-push-enable {
+  width: 100%;
+  border: 1px solid #d9e4de;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #294638;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 750;
+}
+.shopping-push-enable:disabled {
+  opacity: .65;
+}
+.shopping-push-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: #d93636;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 850;
+}
+.shopping-push-check {
+  color: #287a4d;
+  font-size: 17px;
+  font-weight: 900;
+}
+
 </style>
 </head>
 <body>
@@ -1240,6 +1280,10 @@ const config = Object.freeze({
   HOUSEHOLD_ID: "leon-papi-mami-anouk"
 });
 
+const SHOPPING_PUSH_SUBSCRIBE_API = `${config.SUPABASE_URL}/functions/v1/shopping-push-subscribe`;
+const SHOPPING_ITEM_PUSH_API = `${config.SUPABASE_URL}/functions/v1/shopping-item-push`;
+const SHOPPING_VAPID_PUBLIC_KEY = "BD0T9vv-U9TB7ykrqZXih1XkQgVQrl9il1uURiqGLq7ZL840hIpcJ6iLiA3Rn9XrX3HjKD8uWE-1ErFc7i6k81c";
+
 function validConfig(candidate) {
   return Boolean(
     candidate &&
@@ -1415,6 +1459,7 @@ let editProductCurrentImagePath = "";
 let hidePurchased = false;
 let speechRecognition = null;
 let speechListening = false;
+let shoppingPushListenersBound = false;
 
 const UNIT_OPTIONS = ["Stück", "g", "kg", "ml", "l", "Packung", "Beutel", "Flasche", "Dose", "Glas", "Rolle", "Tube", "Schachtel", "Bund", "Paar"];
 
@@ -1422,13 +1467,7 @@ const $ = (id) => document.getElementById(id);
 
 
 async function cleanupOldAppCaches() {
-  try {
-    if ("serviceWorker" in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map(r => r.unregister()));
-    }
-  } catch (_) {}
-
+  // Alte App-Caches entfernen, den Push-Service-Worker aber bewusst bestehen lassen.
   try {
     if ("caches" in window) {
       const keys = await caches.keys();
@@ -1820,6 +1859,7 @@ function initProfile() {
     toast(`Profil: ${currentPerson}`);
     if (db) await loadWeeklyItems();
     updateListModeUI();
+    setupShoppingPush().catch(() => {});
   });
   $("profileBtn").textContent = currentPerson || "Profil wählen";
   $("profileBtn").onclick = () => $("profileDialog").showModal();
@@ -2424,6 +2464,7 @@ async function addItem(name, category, subgroup, quantity = null, unit = "") {
     return false;
   }
   await loadItems();
+  notifyShoppingChange().catch(() => {});
   { const detail = quantityLabel(quantity, unit); toast(detail ? `${name} · ${detail} hinzugefügt` : `${name} hinzugefügt`); }
   return true;
 }
@@ -3155,11 +3196,160 @@ function toast(msg) {
   setTimeout(() => t.remove(), 1800);
 }
 
+
+function shoppingAppIsStandalone() {
+  return Boolean(
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.navigator.standalone === true
+  );
+}
+
+function shoppingPushSupported() {
+  return Boolean(
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  );
+}
+
+function decodeShoppingVapidKey(value) {
+  const pad = "=".repeat((4 - value.length % 4) % 4);
+  const raw = atob((value + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+function clearShoppingBadge() {
+  if ("clearAppBadge" in navigator) {
+    navigator.clearAppBadge().catch(() => {});
+  }
+}
+
+async function registerShoppingPushWorker() {
+  if (!("serviceWorker" in navigator)) return null;
+  await navigator.serviceWorker.register("sw.js?v=1", { scope: "./" });
+  return navigator.serviceWorker.ready;
+}
+
+async function sendShoppingPushSubscription(subscription) {
+  if (!subscription || !currentPerson) return false;
+  const response = await fetch(SHOPPING_PUSH_SUBSCRIBE_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "subscribe",
+      person: currentPerson,
+      subscription: subscription.toJSON()
+    })
+  });
+  if (!response.ok) throw new Error("push_subscription_failed");
+  return true;
+}
+
+async function ensureShoppingPushSubscription(requestPermission = false) {
+  if (!shoppingPushSupported() || !shoppingAppIsStandalone() || !currentPerson) return false;
+
+  const registration = await registerShoppingPushWorker();
+  if (!registration) return false;
+
+  if (Notification.permission === "denied") return false;
+
+  if (Notification.permission === "default") {
+    if (!requestPermission) return false;
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return false;
+  }
+
+  let subscription = await registration.pushManager.getSubscription();
+  if (!subscription) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: decodeShoppingVapidKey(SHOPPING_VAPID_PUBLIC_KEY)
+    });
+  }
+
+  await sendShoppingPushSubscription(subscription);
+  return true;
+}
+
+function showShoppingPushPrompt() {
+  if (!shoppingPushSupported() || !shoppingAppIsStandalone() || !currentPerson) return;
+  if (Notification.permission !== "default") return;
+  if (document.getElementById("shoppingPushPrompt")) return;
+
+  const topbar = document.querySelector(".topbar");
+  if (!topbar) return;
+
+  const wrap = document.createElement("div");
+  wrap.id = "shoppingPushPrompt";
+  wrap.className = "shopping-push-wrap";
+  wrap.innerHTML = `
+    <button type="button" class="shopping-push-enable">
+      <span class="shopping-push-dot">1</span>
+      <span>Rote 1 bei neuen Einkäufen aktivieren</span>
+    </button>
+  `;
+  topbar.insertAdjacentElement("afterend", wrap);
+
+  const button = wrap.querySelector("button");
+  button?.addEventListener("click", async () => {
+    button.disabled = true;
+    try {
+      const ok = await ensureShoppingPushSubscription(true);
+      if (!ok) {
+        wrap.remove();
+        return;
+      }
+      button.innerHTML = '<span class="shopping-push-check">✓</span><span>Hinweise aktiviert</span>';
+      setTimeout(() => wrap.remove(), 1400);
+    } catch (err) {
+      console.warn("Push-Aktivierung fehlgeschlagen", err);
+      button.disabled = false;
+      const label = button.querySelector("span:last-child");
+      if (label) label.textContent = "Aktivierung nochmals versuchen";
+    }
+  });
+}
+
+async function setupShoppingPush() {
+  clearShoppingBadge();
+
+  if (!shoppingPushListenersBound) {
+    shoppingPushListenersBound = true;
+    window.addEventListener("pageshow", clearShoppingBadge);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") clearShoppingBadge();
+    });
+  }
+
+  if (!shoppingPushSupported() || !shoppingAppIsStandalone() || !currentPerson) return;
+
+  await registerShoppingPushWorker();
+
+  if (Notification.permission === "granted") {
+    await ensureShoppingPushSubscription(false);
+  } else if (Notification.permission === "default") {
+    showShoppingPushPrompt();
+  }
+}
+
+async function notifyShoppingChange() {
+  if (!currentPerson) return;
+  const response = await fetch(SHOPPING_ITEM_PUSH_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sender: currentPerson }),
+    keepalive: true
+  });
+  if (!response.ok) throw new Error("shopping_push_failed");
+}
+
+
 async function start() {
-  cleanupOldAppCaches();
+  await cleanupOldAppCaches();
   initProfile();
   buildCatalog();
   db = createDatabaseClient(config.SUPABASE_URL, config.SUPABASE_ANON_KEY);
+  setupShoppingPush().catch(err => console.warn("Push-Setup fehlgeschlagen", err));
   $("syncState").textContent = "Verbinde mit Cloud …";
 
   await Promise.all([
